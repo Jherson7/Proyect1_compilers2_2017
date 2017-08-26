@@ -1,0 +1,413 @@
+options {
+//LOOKAHEAD=1;
+STATIC = false;
+} 
+
+PARSER_BEGIN(Sintactico)
+package gramatica;
+import ArbolAST.Nodo;
+import javax.swing.JOptionPane;
+
+
+public class Sintactico{
+public static Nodo root=null;
+
+ public Nodo retornarArbol(){
+ 	return root;
+ }
+ public static void main(String args[]) throws ParseException 
+ 	{ 
+		try{
+			Sintactico miParser = new Sintactico(System.in); 
+		   root = miParser .Inicio();
+		    JOptionPane.showMessageDialog(null, "Parseo Correcto", "COMPI2", 1);
+		}catch(ParseException e){
+			System.out.println("Error al parsear, "+e.getMessage());
+			JOptionPane.showMessageDialog(null, "Parseo INCORRECTO", "COMPI2", 0);
+		}
+		
+ 	} 
+} 
+PARSER_END(Sintactico)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| "\f"
+}
+
+/* COMENTARIOS */
+
+SKIP :
+{
+<SINGLE_LINE_COMMENT: "#" ( ~["\n","\r"] )* ("\n" | "\r" | "\r\n") >
+|
+  <MULTI_LINE_COMMENT: "#*" ( ~["*"] | ("*")+ ~["*","#"] )* ("*")+ "#" >
+}
+
+
+
+
+/*Operadores relacional*/
+TOKEN:
+{
+ <IIG: "==">
+|<NOIG: "!=">
+|<MENOR: "<">
+|<MAYOR: ">">
+|<MENORI: "<=">
+|<MAYORI: ">=">
+}
+/*Operadores logicos*/
+TOKEN:
+{
+ <OR: "||">
+|<AND: "&&">
+|<NOT: "!">
+}
+/*operadores aritmeticos*/
+TOKEN:
+{
+ <potencia:"^">
+|<div:"/">
+|<mult:"*">
+|<mas: "+">
+|<menos: "-">
+|<apar: "(">
+|<cpar: ")">
+|<alla: "{">
+|<clla: "}">
+|<ptc: ";">
+|<coma: ",">
+|<ASIG: "=">
+|<key:"@">
+}
+
+
+/*PALABRAS RESERVADAS*/
+TOKEN:
+{
+	 <SI: "SI">
+	|<SINO: "SINO">
+	|<SELECCIONA: "SELECCIONA">
+	|<CASO: "CASO">
+	|<DEFECTO: "DEFECTO">
+	|<PARA: "PARA">
+	|<MIENTRAS: "MIENTRAS">
+	|<DETENER: "DETENER">
+	|<IMPRIMIR: "IMPRIMIR">
+	|<FECHA: "FECHA">
+	|<FECHA_HORA: "FECHA_HORA">
+	|<CONTAR: "CONTAR">
+	|<BACKUP: "BACKUP">
+	|<USQLDUMP: "USQLDUMP">
+	|<COMPLETO: "COMPLETO">
+	|<RESTAURAR: "RESTAURAR">
+	|<DECLARAR: "DECLARAR">
+	|<DENEGAR: "DENEGAR">
+	|<OTORGAR: "OTORGAR">
+	|<SELECCIONAR: "SELECCIONAR">
+	|<BORRAR: "BORRAR">
+	|<ORDENAR: "ORDENAR">
+	|<POR: "POR">
+	|<AGREGAR: "AGREGAR">
+	|<QUITAR: "QUITAR">
+	|<ACTUALIZAR: "ACTUALIZAR">
+	|<INSERTAR: "INSERTAR">
+	|<EN: "EN">
+	|<DONDE: "DONDE">
+	|<VALORES: "VALORES">
+	|<ALTERAR: "ALTERAR">
+	|<USAR: "USAR">
+	|<USUARIO: "USUARIO">
+	|<RETORNO: "RETORNO">
+	|<FUNCION: "FUNCION">
+	|<PROCEDIMIENTO: "PROCEDIMIENTO">
+	|<OBJECTO: "OBJECTO">
+	|<BASE_DATOS :"BASE_DATOS">
+	|<TABLA : "TABLA">
+	|<CREAR: "CREAR">
+	|<PK:"Llave_Primaria">
+	|<AUTO_INCREMENT: "Autoincrementable">
+	|<FK:"Llave_Foranea">
+	|<NOT_NULL:"No Nulo">
+	|<NULO:"Nulo">
+}
+
+/* PALABRAS RESERVADAS */
+
+TOKEN :
+{
+  < BOOL: "BOOL" >
+| < CHAR: "caracter" >
+| < INTEGER: "INTEGER" >
+| < TEXT : "TEXT " >
+| < DOUBLE: "DOUBLE" >
+| < VACIO: "VACIO">
+| < DATE: "DATE">
+| < DATETIME: "DATETIME">
+
+
+}
+
+/*EXPRESIONES REGULARES*/
+TOKEN :
+{
+  < NUM: <DECIMAL_LITERAL >>
+| < #DECIMAL_LITERAL: ["0"-"9"] (["0"-"9"])*(["."](["0"-"9"])*)? >
+| <FALSE: "falso">
+| <TRUE: "verdadero">
+| < IDEN: ["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
+| <CARACTER: <VAL_CARAC> >
+| < #VAL_CARAC: "'" (("^"["n","t","r","^","'","\""])|(~["\\","\n","\t","\r"]))"'"  >
+| <CADENA: "\""(~["\"","\n","\t"])* "\"">
+| <DATE_EXP: "'" <DIA>["-"] <MES> ["-"] <ANIO> "'">
+| <#DIA: ((["0"])?["1"-"9"]|["1"-"3"]["0"-"9"])>
+| <#MES: ((["0"])?["1"-"9"]|"10"|"11"|"12")>
+| <#ANIO:  (["0"-"9"])+>
+| <DATE_TIME_EXP: "'" <DIA>["-"] <MES> ["-"] <ANIO> " " <HOUR> "'">
+| <#HOUR: (((["0"])?["0"-"9"]|["1"-"2"]["0"-"9"])":"(["0"-"6"]["0"-"9"])":"(["0"-"6"]["0"-"9"]))>
+}
+
+
+
+Nodo Inicio():
+{Nodo raiz,sent;}
+{ 
+   {raiz= new Nodo("INICIO",0,0);}
+   (sent=Sentencias_Padre() {raiz.hijos.addLast(sent);} )* <EOF>
+   {return raiz;}
+  
+}
+
+Nodo Sentencias_Padre():
+{Nodo raiz; Token v;}
+{
+  <CREAR>  raiz = Sentencias_Crear() <ptc> {return raiz;}
+  <USAR> v=<IDEN> <ptc>  {raiz= new Nodo("USAR",v.beginLine,v.beginColumn,v.image);}
+	//{ArbolAst ar = new ArbolAst(); ar.metodos(r
+}
+
+Nodo Sentencias_Crear():
+{Nodo raiz,sent; Token v;}
+{
+     <BASE_DATOS> v=<IDEN> { raiz = new Nodo("BASE_DATOS",v.beginLine,v.beginColumn,v.image); }
+    |<TABLA> sent = Sentencias_Tabla()   {raiz=sent;}
+    |<PROCEDIMIENTO> sent = Sentencias_Procedimiento()   {raiz=sent;}
+    |<OBJECTO> v=<IDEN> <apar> { raiz = new Nodo("OBJECTO",v.beginLine,v.beginColumn,v.image); }
+     (sent = Sentencias_Objeto(){raiz.hijos.addLast(sent);})+ 
+     <cpar>
+    {return raiz;} 
+
+}
+
+Nodo Sentencias_Tabla():
+{Nodo raiz,sent,atributos; Token v;}
+{
+     v=<IDEN> {raiz=new Nodo("TABLA",v.beginLine,v.beginColumn,v.image);}
+     {atributos=new Nodo("ATRIBUTOS",0,0);}
+      <apar> sent = Atributos_Tabla() {atributos.hijos.addLast(sent);}
+     (<coma> sent = Atributos_Tabla() {atributos.hijos.addLast(sent);})* 
+      <cpar>
+	
+	{
+     raiz.hijos.addLast(atributos);
+	 return raiz;
+	}
+}
+
+
+
+Nodo Atributos_Tabla():
+{Nodo raiz,features,aux;String tipo; Token t;}
+{ 
+	 {features = new Nodo("FEATURES",0,0);}
+	 tipo=Tipo_Var() t=<IDEN> { raiz= new Nodo("ATRIBUTO_TABLA",t.beginLine,t.beginColumn,tipo,t.image); }
+
+	 						 (aux=Caracteristicas(){features.hijos.addLast(aux);})* 
+	 {
+	 	raiz.hijos.addLast(features);
+	 	return raiz;
+	 }
+}
+
+Nodo Caracteristicas():
+{Nodo raiz;Token v;}
+{
+     <FK> v=<IDEN> 			{raiz=new Nodo("FK",v.beginLine,v.beginColumn,v.image);}
+   | v=<PK> 				{raiz=new Nodo("PK",v.beginLine,v.beginColumn,v.image);}
+   | v=<AUTO_INCREMENT> 	{raiz=new Nodo("AUTO_INCREMENT",v.beginLine,v.beginColumn,v.image);}
+   | v=<NOT_NULL> 			{raiz=new Nodo("NOT NULL",v.beginLine,v.beginColumn,v.image);}
+   | v=<NULO>				{raiz=new Nodo("NULL",v.beginLine,v.beginColumn,v.image);}
+   {return raiz;}
+}
+
+
+Nodo Sentencias_Procedimiento()://metodo para crear procedimiento
+{Nodo raiz,parametros,p;Token t;}
+{
+	{parametros= new Nodo("PARAMETROS",0,0);}
+	t=<IDEN> {raiz=new Nodo("PROCEDIMIENTO",t.beginLine,t.beginColumn,t.image);}
+	<apar> (p=Parametros(){parametros.hijos.addLast(p);}(<coma>p=Parametros(){parametros.hijos.addLast(p);})*)? 
+		    
+    <cpar> 
+    <alla>/*sentencias usql*/ <clla>
+	{raiz.hijos.addLast(parametros); return raiz;}
+}
+
+Nodo Parametros():
+{Nodo raiz,aux;String tipo; Token t;}
+{ 
+	 tipo=Tipo_Var() <key> t=<IDEN> 
+	 {
+	 	raiz=new Nodo("PARAMETRO",t.beginLine,t.beginColumn,tipo);
+	 	raiz.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));
+	 	return raiz;
+	 }
+}
+
+
+
+Nodo Sentencias_Objeto():
+{Nodo raiz; String tipo;Token t;}
+{
+      tipo=Tipo_Var() t=<IDEN> 
+    { raiz= new Nodo("ATRIBUTO_OBJETO",t.beginLine,t.beginColumn,tipo,t.image); }
+
+    {return raiz;} 
+}
+
+
+Nodo Declaracion():
+{Nodo raiz,variables,aux; String tipo;Token t;}
+{
+     
+	 {variables=new Nodo("Lista_Variables",0,0);}
+
+     t=<DECLARAR> aux=Variables(){variables.hijos.addLast(aux);}
+     (<coma> aux=Variables(){variables.hijos.addLast(aux);})* 
+     tipo=Tipo_Var() <ASIG> aux= Rel_Or()
+     {
+     	raiz=new Nodo("DECLARAR",t.beginLine,t.beginColumn,tipo);
+     	raiz.hijos.addLast(variables);
+     	raiz.hijos.addLast(aux);
+ 	 }
+
+    {return raiz;} 
+}
+
+Nodo Variables(): 
+{Token v;}
+{
+
+   <key> v=<IDEN> {return new Nodo("ID",v.beginLine,v.beginLine,v.image);}
+}
+
+Nodo Rel_Or():
+{Nodo uno,dos,raiz;}
+{
+    raiz= Rel_And() 
+    			  ( <OR> uno=Rel_And(){dos=raiz; raiz= new Nodo ( "OR",token.beginLine,token.beginColumn ); raiz.hijos.add(dos);raiz.hijos.add(uno);})*
+    {return raiz;}
+}
+
+
+Nodo Rel_And():
+{Nodo uno,dos,raiz;}
+{
+    raiz= Rel_Not() 
+    			  ( <AND> uno=Rel_Not(){dos=raiz; raiz= new Nodo ( "AND",token.beginLine,token.beginColumn ); raiz.hijos.add(dos);raiz.hijos.add(uno);})*
+    {return raiz;}
+}
+
+
+Nodo Rel_Not():
+{Nodo uno,dos,raiz;}
+{
+      raiz= Relacional() 
+    | <NOT> uno= Relacional()  {raiz = new Nodo("NOT",uno);}
+    {return raiz;}
+}
+
+
+Nodo Relacional():
+{Nodo uno,dos,raiz,rel;String t;}
+{
+	
+	raiz=Operacion() ( t=operadores_rel() {rel=new Nodo("OPE_REL",token.beginLine,token.beginLine, t);} uno=Operacion() 
+					   { dos = raiz; raiz=new Nodo("COND",token.beginLine,token.beginLine); 
+					    raiz.hijos.add(dos); 
+					    raiz.hijos.add(rel); 
+					    raiz.hijos.add(uno); 
+					   }
+			   		 )* 
+	{return raiz;}
+}	
+
+String operadores_rel():
+{}{
+	 <IIG>		{return  token.image.toString();}
+	|<MENORI>	{return  token.image.toString();}
+	|<MAYORI>	{return  token.image.toString();}
+	|<MENOR>	{return  token.image.toString();}
+	|<MAYOR>	{return  token.image.toString();}
+	|<NOIG>		{return  token.image.toString();}
+
+}
+
+Nodo Operacion():
+{Nodo raiz,uno,dos;}
+{
+   raiz= Multiplica() (  <mas>   uno= Multiplica() 	  { dos = raiz; raiz=new Nodo("MAS",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno); } 
+    			  	   | <menos> uno= Multiplica()    { dos = raiz; raiz=new Nodo("MENOS",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno); } )*
+  {return raiz;}
+}
+
+Nodo Multiplica():
+{Nodo raiz,uno,dos;}
+{
+   
+    raiz=Potencia() ( <mult> uno=Potencia() { dos = raiz; raiz=new Nodo("POR",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno); } 
+    				 |<div> uno= Potencia(){ dos = raiz; raiz=new Nodo("DIV",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno); }  )*
+ {return raiz;}
+}
+
+Nodo Potencia():
+{Nodo raiz,uno,dos;}
+{
+	raiz=Expresion() (<potencia> uno= Expresion(){dos = raiz; raiz=new Nodo("EXP",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno);})*
+	{return raiz;}
+}
+
+
+Nodo Expresion(): 
+{Nodo r,s,v;Token t;}
+{
+	   <key> t=<IDEN> 	{r=new Nodo("ID",t.beginLine,t.beginColumn,t.image);}
+	| t=<NUM> 			{r=new Nodo("NUM",t.beginLine,t.beginColumn,t.image);}
+  	| t=<FALSE> 		{r=new Nodo("FALSE",t.beginLine,t.beginColumn,t.image);}
+	| t=<TRUE>			{r=new Nodo("TRUE",t.beginLine,t.beginColumn,t.image);}
+  	| t=<CARACTER> 		{r=new Nodo("CHAR",t.beginLine,t.beginColumn,t.image);}
+ 	| t=<CADENA>    	{r=new Nodo("CAD",t.beginLine,t.beginColumn,t.image);}
+	| t=<DATE_EXP>  	{r=new Nodo("DATE",t.beginLine,t.beginColumn,t.image);}
+	| t=<DATE_TIME_EXP> {r=new Nodo("DATE TIME",t.beginLine,t.beginColumn,t.image);}
+	{return r;}
+
+}
+
+String Tipo_Var():
+{String tipo;}
+{ 
+ <BOOL>		{return token.image.toString();}
+|<CHAR>		{return token.image.toString();}
+|<INTEGER>	{return token.image.toString();}
+|<TEXT>		{return token.image.toString();}
+|<DOUBLE>	{return token.image.toString();}
+|<VACIO>	{return token.image.toString();}
+|<DATE>     {return token.image.toString();}
+|<DATETIME> {return token.image.toString();}
+
+}
