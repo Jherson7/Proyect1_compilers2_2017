@@ -83,7 +83,10 @@ TOKEN:
 |<ptc: ";">
 |<coma: ",">
 |<ASIG: "=">
+|<aumentos: "--|++">
 |<key:"@">
+|<dosp:":">
+|<punto:".">
 }
 
 
@@ -135,6 +138,13 @@ TOKEN:
 	|<FK:"Llave_Foranea">
 	|<NOT_NULL:"No Nulo">
 	|<NULO:"Nulo">
+	|<COLOCAR:"COLOCAR">
+	|<PASS:"password">
+	|<CAMBIAR:"CAMBIAR">
+	|<ELIMINAR:"ELIMINAR">
+	|<ORDER:"ASC|DESC">
+	|<DE:"DE">
+	|<PERMISOS:"PERMISOS">
 }
 
 /* PALABRAS RESERVADAS */
@@ -186,22 +196,31 @@ Nodo Inicio():
 Nodo Sentencias_Padre():
 {Nodo raiz; Token v;}
 {
-  <CREAR>  raiz = Sentencias_Crear() <ptc> {return raiz;}
-  <USAR> v=<IDEN> <ptc>  {raiz= new Nodo("USAR",v.beginLine,v.beginColumn,v.image);}
-	//{ArbolAst ar = new ArbolAst(); ar.metodos(r
+   <CREAR>  raiz = Sentencias_Crear() 
+ | <USAR> v=<IDEN> <ptc>  {raiz= new Nodo("USAR",v.beginLine,v.beginColumn,v.image);}
+	{return raiz;}
 }
 
 Nodo Sentencias_Crear():
 {Nodo raiz,sent; Token v;}
 {
-     <BASE_DATOS> v=<IDEN> { raiz = new Nodo("BASE_DATOS",v.beginLine,v.beginColumn,v.image); }
-    |<TABLA> sent = Sentencias_Tabla()   {raiz=sent;}
-    |<PROCEDIMIENTO> sent = Sentencias_Procedimiento()   {raiz=sent;}
-    |<OBJECTO> v=<IDEN> <apar> { raiz = new Nodo("OBJECTO",v.beginLine,v.beginColumn,v.image); }
+     <BASE_DATOS> v=<IDEN> { raiz = new Nodo("BASE_DATOS",v.beginLine,v.beginColumn,v.image); } <ptc> 
+    |<TABLA> 		 raiz = Sentencias_Tabla()   		<ptc> 
+    |<PROCEDIMIENTO> raiz = Sentencias_Procedimiento()   
+    |<FUNCION>	     raiz = Sentencias_Funcion()
+    |<USUARIO> 		 raiz = Crear_Usuario() 			<ptc>  
+    |<OBJECTO> v=<IDEN> <apar> { raiz = new Nodo("OBJECTO",v.beginLine,v.beginColumn,v.image); }<ptc> 
      (sent = Sentencias_Objeto(){raiz.hijos.addLast(sent);})+ 
      <cpar>
     {return raiz;} 
 
+}
+
+Nodo Crear_Usuario():
+{Token a,b;}
+{
+	a=<IDEN> <COLOCAR> <PASS> <ASIG> b=<TEXT>
+	{return new Nodo("CREAR_USER",a.beginLine,a.beginColumn,a.image,b.image);}
 }
 
 Nodo Sentencias_Tabla():
@@ -222,7 +241,7 @@ Nodo Sentencias_Tabla():
 
 
 Nodo Atributos_Tabla():
-{Nodo raiz,features,aux;String tipo; Token t;}
+{Nodo raiz,features,aux, tipo; Token t;}
 { 
 	 {features = new Nodo("FEATURES",0,0);}
 	 tipo=Tipo_Var() t=<IDEN> { raiz= new Nodo("ATRIBUTO_TABLA",t.beginLine,t.beginColumn,tipo,t.image); }
@@ -235,9 +254,10 @@ Nodo Atributos_Tabla():
 }
 
 Nodo Caracteristicas():
-{Nodo raiz;Token v;}
+{Nodo raiz;Token v,t;}
 {
-     <FK> v=<IDEN> 			{raiz=new Nodo("FK",v.beginLine,v.beginColumn,v.image);}
+	//ARREGLAR EL FOREING KEY
+     <FK> v=<IDEN> t=<IDEN>	{raiz=new Nodo("FK",v.beginLine,v.beginColumn,v.image,t.image);}
    | v=<PK> 				{raiz=new Nodo("PK",v.beginLine,v.beginColumn,v.image);}
    | v=<AUTO_INCREMENT> 	{raiz=new Nodo("AUTO_INCREMENT",v.beginLine,v.beginColumn,v.image);}
    | v=<NOT_NULL> 			{raiz=new Nodo("NOT NULL",v.beginLine,v.beginColumn,v.image);}
@@ -247,32 +267,421 @@ Nodo Caracteristicas():
 
 
 Nodo Sentencias_Procedimiento()://metodo para crear procedimiento
-{Nodo raiz,parametros,p;Token t;}
+{Nodo raiz,parametros,p,sentencias;Token t;}
 {
 	{parametros= new Nodo("PARAMETROS",0,0);}
+	{sentencias= new Nodo("SENTENCIAS",0,0);}
 	t=<IDEN> {raiz=new Nodo("PROCEDIMIENTO",t.beginLine,t.beginColumn,t.image);}
-	<apar> (p=Parametros(){parametros.hijos.addLast(p);}(<coma>p=Parametros(){parametros.hijos.addLast(p);})*)? 
+	<apar> 
+	(p=Parametros(){parametros.hijos.addLast(p);}(<coma>p=Parametros(){parametros.hijos.addLast(p);})* {raiz.hijos.addLast(parametros);})? 
 		    
     <cpar> 
-    <alla>/*sentencias usql*/ <clla>
-	{raiz.hijos.addLast(parametros); return raiz;}
+    <alla>(p= Sentencias_Usql() {sentencias.hijos.addLast(p);})+ <clla>
+	
+	{
+		
+	 	raiz.hijos.addLast(sentencias); 
+	 	return raiz;
+	 }
 }
 
-Nodo Parametros():
-{Nodo raiz,aux;String tipo; Token t;}
-{ 
-	 tipo=Tipo_Var() <key> t=<IDEN> 
-	 {
-	 	raiz=new Nodo("PARAMETRO",t.beginLine,t.beginColumn,tipo);
+Nodo Sentencias_Funcion()://metodo para crear procedimiento
+{Nodo raiz,parametros,p,sentencias;Token t;}
+{
+	{parametros= new Nodo("PARAMETROS",0,0);}
+	{sentencias= new Nodo("SENTENCIAS",0,0);}
+	t=<IDEN> {raiz=new Nodo("FUNCION",t.beginLine,t.beginColumn,t.image);}
+	<apar> 
+	(p=Parametros(){parametros.hijos.addLast(p);}(<coma>p=Parametros(){parametros.hijos.addLast(p);})* {raiz.hijos.addLast(parametros);})? 
+    <cpar> t=<IDEN> 
+    <alla>(p= Sentencias_Usql() {sentencias.hijos.addLast(p);})+ <clla>
+	
+	{
 	 	raiz.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));
+	 	raiz.hijos.addLast(sentencias); 
 	 	return raiz;
 	 }
 }
 
 
 
+Nodo Parametros():
+{Nodo raiz,aux;Nodo tipo; Token t;}
+{ 
+	 tipo=Tipo_Var() <key> t=<IDEN> 
+	 {
+	 	raiz=new Nodo("PARAMETRO",t.beginLine,t.beginColumn);
+	 	raiz.hijos.addLast(tipo);
+	 	raiz.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));
+	 	return raiz;
+	 }
+}
+
+
+Nodo Sentencias_Usql():
+{Nodo sent; Token t;}
+{
+	  sent= Ciclo_While()
+	| sent= Ciclo_For()
+	| sent= Imprimir()
+	| sent= Llamada_funcion()
+	| sent= Retornar()			<ptc> 
+	| sent= Declaracion()		<ptc> 
+	| sent= Asignacion()		<ptc> 
+	| sent= Contar()			<ptc> 
+	| <ALTERAR> 			    sent=Alterar() 					<ptc> 
+	| <DETENER>  			   	{sent=new Nodo("DETENER",token.beginLine,token.beginColumn);}
+	| <ELIMINAR> 				sent= Sentencias_Eliminar()		<ptc> 
+	| <INSERTAR> <EN> <TABLA> 	sent= Sentencias_Insertar()		<ptc> 
+	| <ACTUALIZAR> <TABLA>		sent= Sentencias_Actualizar()	<ptc> 
+	| <BORRAR> <EN> <TABLA> 	sent= Sentencias_Borrar()		<ptc> 
+	| <SELECCIONAR> 			sent= Sentencias_Seleccionar()	<ptc> 
+	| <OTORGAR> <PERMISOS>		sent= Sentencias_Permisos()		<ptc> 
+	| <DENEGAR> <PERMISOS>		sent= Sentencias_Denengar()		<ptc> 
+	| <BACKUP>					sent= Sentencias_Backup()		<ptc> 
+	| <RESTAURAR> 				sent= Sentencias_Restaurar()	<ptc> 
+	{return sent;}
+}
+
+
+Nodo Sentencias_Backup():
+{Nodo raiz; Token a,b;}
+{
+	<USQLDUMP> a=<IDEN> b=<IDEN>
+	{raiz= new Nodo("BACKUP_USQL",a.beginLine,a.beginColumn,a.image,b.image);}
+	|
+
+	<COMPLETO> a=<IDEN> b=<IDEN>
+	{raiz= new Nodo("BACKUP_COMPLETO",a.beginLine,a.beginColumn,a.image,b.image);}
+
+	{return raiz;}
+}
+
+
+Nodo Sentencias_Restaurar():
+{Nodo raiz; Token a,b;}
+{
+	<USQLDUMP> a=<IDEN> b=<IDEN>
+	{raiz= new Nodo("RESTORE_USQL",a.beginLine,a.beginColumn,a.image,b.image);}
+	|
+
+	<COMPLETO> a=<IDEN> b=<IDEN>
+	{raiz= new Nodo("RESTORE_COMPLETO",a.beginLine,a.beginColumn,a.image,b.image);}
+
+	{return raiz;}
+}
+
+
+Nodo Contar():
+{Nodo raiz,r;Token v;}
+{
+	v=<CONTAR> 
+	<apar> 
+	"<<"
+	<SELECCIONAR> r= Sentencias_Seleccionar()
+	">>"
+	<cpar>
+	
+	{raiz = new Nodo("CONTAR",v.beginLine,v.beginColumn);
+	 raiz.hijos.addLast(r);
+	 return raiz;
+	}
+}
+
+
+Nodo Sentencias_Denengar():
+{Nodo raiz; Token user,bd,obj;}
+{
+	user=<IDEN> <coma> bd=<IDEN> <punto>(obj=<IDEN>|obj=<mult>)
+	{raiz = new Nodo("DENEGAR",user.beginLine,user.beginColumn,user.image,bd.image);
+	 raiz.hijos.addLast(new Nodo(obj.image,obj.beginLine,obj.beginColumn));
+	 return raiz;
+	}
+}
+
+
+Nodo Sentencias_Permisos():
+{Nodo raiz; Token user,bd,obj;}
+{
+	user=<IDEN> <coma> bd=<IDEN> <punto>(obj=<IDEN>|obj=<mult>)
+	{raiz = new Nodo("OTORGAR",user.beginLine,user.beginColumn,user.image,bd.image);
+	 raiz.hijos.addLast(new Nodo(obj.image,obj.beginLine,obj.beginColumn));
+	 return raiz;
+	}
+}
+
+
+
+Nodo Sentencias_Seleccionar():
+{Nodo raiz,l_campos,l_tablas,r;Token v;}
+{
+   
+	{l_tablas = new Nodo("lista_tablas",0,0);}
+	{raiz = new Nodo("SELECCIONAR_*",0,0);}
+    <mult> <DE> v=<IDEN> {l_tablas.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));}
+    (<coma> v=<IDEN>{l_tablas.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));})* 
+    {raiz.hijos.addLast(l_tablas);}
+    (<DONDE> r=Rel_Or(){raiz.hijos.addLast(r);})?
+   
+   |
+     {raiz = new Nodo("SELECCIONAR",0,0);}
+     {l_campos = new Nodo("lista_campos",0,0);}
+     {l_tablas = new Nodo("lista_tablas",0,0);}
+     v=<IDEN> {l_campos.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));}
+     (<coma> v=<IDEN>{l_campos.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));})* 
+     <DE> v=<IDEN> {l_tablas.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));}
+     (<coma> v=<IDEN>{l_tablas.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));})* 
+     (<DONDE> r=Rel_Or(){raiz.hijos.addLast(r);})?
+    
+    {return raiz;}
+}
+
+
+Nodo Sentencias_Borrar():
+{Nodo raiz,r; Token t,v;}
+{
+    t= <IDEN> {raiz = new Nodo("BORRAR",t.beginLine,t.beginColumn,t.image);}
+	(<DONDE> r=Rel_Or() {raiz.hijos.addLast(r);})?//DONDE 
+	{return raiz;}
+}
+
+
+
+Nodo Sentencias_Insertar():
+{Nodo raiz,r,atr,atr2; Token t;}
+{
+	 {atr=new Nodo	("ATRIBUTOS",0,0);}
+	 t=<IDEN> {raiz = new Nodo("INSERTAR",t.beginLine,t.beginColumn,t.image);}
+	 <apar> 
+	 r=Rel_Or(){atr.hijos.addLast(r);} 
+	   (<coma> r=Rel_Or(){atr.hijos.addLast(r);} )* 
+	 {raiz.hijos.addLast(atr);}
+	 <cpar> 
+	 		  ({atr2=new Nodo("ATRIBUTOS",0,0); }<VALORES> 
+	 		  	<apar>  
+	 		  	      r=Rel_Or(){atr2.hijos.addLast(r);} 
+	 		  	      (<coma> r=Rel_Or(){atr2.hijos.addLast(r);} )*  
+	 		  	<cpar>  {raiz.hijos.addLast(atr2); raiz.nombre="INSERTAR_ESPECIAL";} )?
+
+	 {return raiz;}
+}
+
+Nodo Sentencias_Actualizar():
+{Nodo raiz,r,atr,atr2; Token t;}
+{
+	{atr=new Nodo	("ATRIBUTOS",0,0);}
+    {atr2=new Nodo	("ATRIBUTOS",0,0);}
+	t=<IDEN> {raiz = new Nodo("ACTUALIZAR_TABLA",t.beginLine,t.beginColumn,t.image);}
+	 <apar>
+	  	t=<IDEN> {atr.hijos.add(new Nodo(t.image,t.beginLine,t.beginColumn));} 
+	  	(<coma> t=<IDEN	>{atr.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));} )*
+	 <cpar> 
+	 <VALORES>
+	 <apar>
+	 	r=Rel_Or(){atr2.hijos.addLast(r);} 
+	   (<coma> r=Rel_Or(){atr2.hijos.addLast(r);} )* 
+	 <cpar>
+	 
+	 {raiz.hijos.addLast(atr);
+	  raiz.hijos.addLast(atr2);
+	 }	
+	 (<DONDE> r=Rel_Or() {raiz.hijos.addLast(r);})?//DONDE preguntar si tiene un hijo mas
+	 {return raiz;}
+}
+
+
+Nodo Alterar():
+{Nodo raiz,r; Token t,v;}
+{
+	 <TABLA>   t=<IDEN> r=Alterar_Tabla() {raiz= new Nodo("ALTERAR_TABLA",t.beginLine,t.beginColumn,t.image);
+										   raiz.hijos.addLast(r);}
+
+   	|<OBJECTO> t=<IDEN> r=Alterar_Objeto(){raiz= new Nodo("ALTERAR_OBJETO",t.beginLine,t.beginColumn,t.image);
+										   raiz.hijos.addLast(r);}
+
+	|<USUARIO> v=<IDEN>  <CAMBIAR> <PASS> <ASIG> t=<TEXT> {raiz= new Nodo("ALTERAR_USUARIO",t.beginLine,t.beginColumn,v.image);
+										   				   raiz.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));}		
+
+   	{return raiz;}		  
+}
+
+Nodo Alterar_Tabla():
+{Nodo raiz,atributos,aux; Token t;}
+{
+	 {atributos=new Nodo("ATRIBUTOS",0,0);}
+	 <AGREGAR> 	<apar> aux=Atributos_Tabla(){atributos.hijos.addLast(aux);}
+	 				   (<coma>aux = Atributos_Tabla(){atributos.hijos.addLast(aux);})*
+	 			<cpar>
+	 			{raiz=new Nodo("AGREGAR",token.beginLine,token.beginColumn); raiz.hijos.add(atributos);}
+	|{atributos=new Nodo("ATRIBUTOS",0,0);}
+	 <QUITAR>  t=<IDEN> {atributos.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));}
+				(<coma> t=<IDEN> {atributos.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));})*
+			    {raiz=new Nodo("QUITAR",token.beginLine,token.beginColumn); raiz.hijos.add(atributos);}
+
+	{return raiz;}
+}
+
+Nodo Alterar_Objeto():
+{Nodo raiz,atributos,aux; Token t;}
+{
+	 {atributos=new Nodo("ATRIBUTOS",0,0);}
+	 <AGREGAR> 	<apar> aux=Sentencias_Objeto(){atributos.hijos.addLast(aux);}
+	 				   (<coma>aux = Sentencias_Objeto(){atributos.hijos.addLast(aux);})*
+	 			<cpar>
+	 			{raiz=new Nodo("AGREGAR",token.beginLine,token.beginColumn); raiz.hijos.add(atributos);}
+	|{atributos=new Nodo("ATRIBUTOS",0,0);}
+	 <QUITAR>  t=<IDEN> {atributos.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));}
+				(<coma> t=<IDEN> {atributos.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));})*
+			    {raiz=new Nodo("QUITAR",token.beginLine,token.beginColumn); raiz.hijos.add(atributos);}
+
+	{return raiz;}
+}
+
+
+Nodo  Sentencias_Eliminar():
+{Nodo raiz; Token t;}
+{
+	 <OBJECTO> 		t=<IDEN> {raiz= new Nodo("ELIMINAR_OBJ",t.beginLine,t.beginColumn,t.image);}
+	|<TABLA> 		t=<IDEN> {raiz= new Nodo("ELIMINAR_TABLA",t.beginLine,t.beginColumn,t.image);}
+	|<BASE_DATOS> 	t=<IDEN> {raiz= new Nodo("ELIMINAR_BD",t.beginLine,t.beginColumn,t.image);}
+	|<USUARIO> 		t=<IDEN> {raiz= new Nodo("ELIMINAR_USER",t.beginLine,t.beginColumn,t.image);}
+	{return raiz;}
+}
+
+Nodo Retornar():
+{Nodo raiz,aux; Token t;}
+{
+	t=<RETORNO> aux=Rel_Or() {raiz=new Nodo("RETORNO",aux);}
+	{return raiz;}
+}
+
+
+Nodo Llamada_funcion():
+{Nodo raiz,parametros,aux;Token t;}
+{
+	{parametros=new Nodo("PARAMETROS",0,0);}
+	t=<IDEN> 
+	<apar> 
+		(		aux=Rel_Or(){parametros.hijos.addLast(aux);}
+		(<coma> aux=Rel_Or(){parametros.hijos.addLast(aux);})* )* 
+	<cpar>
+
+	{raiz=new Nodo("CALL_FUN",t.beginLine,t.beginColumn,t.image);
+	 raiz.hijos.addLast(parametros);
+	 return raiz;
+	}
+}
+
+Nodo Ciclo_While():
+{Nodo raiz,aux;Token t;}
+{
+	t=<MIENTRAS>  {raiz= new Nodo("WHILE",t.beginLine,t.beginColumn);}
+	<apar> aux=Rel_Or(){raiz.hijos.addLast(aux);} <cpar> 
+	<alla> 
+		(aux=Sentencias_Usql(){raiz.hijos.addLast(aux);})*
+	<clla>
+
+	{return raiz;}
+}
+
+Nodo Ciclo_For():
+{Nodo raiz,aux;Token t;}
+{
+	t=<PARA>  {raiz= new Nodo("PARA",t.beginLine,t.beginColumn);}
+	<apar> 
+	aux=Declaracion(){raiz.hijos.addLast(aux);} <ptc>
+	aux=Rel_Or(){raiz.hijos.addLast(aux);} <ptc>
+	t= <aumentos>{raiz.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));}
+	<cpar> 
+	<alla> 
+		(aux=Sentencias_Usql(){raiz.hijos.addLast(aux);})*
+	<clla>
+
+	{return raiz;}
+}
+
+Nodo Ciclo_Selecciona():
+{Nodo raiz,aux;Token t;}
+{
+	t=<SELECCIONA>  {raiz= new Nodo("SELECCIONA",t.beginLine,t.beginColumn);}
+	<apar> 
+	aux=Rel_Or()				{raiz.hijos.addLast(aux);} 
+	<cpar> 
+	<alla> 
+		(aux=Casos()			{raiz.hijos.addLast(aux);})+
+		(aux=Defecto()			{raiz.hijos.addLast(aux);})?
+	<clla>
+
+	{return raiz;}
+}
+
+Nodo Casos():
+{Nodo raiz,aux,sentencias;Token t;}
+{
+	{sentencias= new Nodo("SENTENCIAS",0,0);}
+
+	t=<CASO>      {raiz= new Nodo("CASO",t.beginLine,t.beginColumn);}
+	aux=Rel_Or()  {raiz.hijos.addLast(aux);}
+	<dosp>
+	
+	(aux=Sentencias_Usql()	{sentencias.hijos.addLast(aux);})*
+    
+	{
+		raiz.hijos.addLast(sentencias);
+		return raiz;
+	}
+}
+
+Nodo Defecto():
+{Nodo raiz,aux,sentencias;Token t;}
+{
+	{sentencias= new Nodo("SENTENCIAS",0,0);}
+
+	t=<DEFECTO>      {raiz= new Nodo("DEFECTO",t.beginLine,t.beginColumn);}
+	<dosp>
+	(aux=Sentencias_Usql(){sentencias.hijos.addLast(aux);})*
+	{
+		raiz.hijos.addLast(sentencias);
+		return raiz;
+	}
+}
+
+Nodo IF():
+{Nodo raiz,aux,sentencias;Token t;}
+{
+	{sentencias= new Nodo("SENTENCIAS",0,0);}
+
+	t=<SI>      	{raiz= new Nodo("SI",t.beginLine,t.beginColumn);}
+	<apar> 
+		aux=Rel_Or()	{raiz.hijos.addLast(aux);} 
+	<cpar> 
+	<alla>
+	  (aux=Sentencias_Usql(){sentencias.hijos.addLast(aux);})*
+	  {raiz.hijos.addLast(sentencias);} 
+	<clla>
+	<SINO>
+	<alla>
+		{sentencias= new Nodo("SENTENCIAS",0,0);}
+		(aux=Sentencias_Usql(){sentencias.hijos.addLast(aux);})*
+		{raiz.hijos.addLast(sentencias);}
+	<clla>
+
+	{
+		return raiz;
+	}
+}
+
+Nodo Imprimir():
+{Nodo raiz,sent; Token t;}
+{
+	t=<IMPRIMIR> <apar> Rel_Or() <cpar>
+	{ raiz = new Nodo("IMPRIMIR",t.beginLine,t.beginColumn);}
+	{return raiz;}
+}
+
+
 Nodo Sentencias_Objeto():
-{Nodo raiz; String tipo;Token t;}
+{Nodo raiz, tipo;Token t;}
 {
       tipo=Tipo_Var() t=<IDEN> 
     { raiz= new Nodo("ATRIBUTO_OBJETO",t.beginLine,t.beginColumn,tipo,t.image); }
@@ -281,8 +690,23 @@ Nodo Sentencias_Objeto():
 }
 
 
+Nodo Asignacion():
+{Nodo raiz,r; Token a,b;}
+{
+	<key> a=<IDEN> (<ASIG> r=Rel_Or() {raiz=new Nodo("ASIGNACION",a.beginLine,a.beginColumn,a.image);
+	 								   raiz.hijos.addLast(r); }
+
+		            |<punto> b=<IDEN> <ASIG> r=Rel_Or()
+		            	{raiz=new Nodo("ASIGNACION_OBJETO",a.beginLine,a.beginColumn,a.image,b.image);
+	 					 raiz.hijos.addLast(r); }
+		            ) 
+	
+	 {return raiz;}
+	
+}
+
 Nodo Declaracion():
-{Nodo raiz,variables,aux; String tipo;Token t;}
+{Nodo raiz,variables,aux, tipo;Token t;}
 {
      
 	 {variables=new Nodo("Lista_Variables",0,0);}
@@ -291,7 +715,10 @@ Nodo Declaracion():
      (<coma> aux=Variables(){variables.hijos.addLast(aux);})* 
      tipo=Tipo_Var() <ASIG> aux= Rel_Or()
      {
-     	raiz=new Nodo("DECLARAR",t.beginLine,t.beginColumn,tipo);
+     	raiz=new Nodo("DECLARAR",t.beginLine,t.beginColumn);
+     	if(tipo.nombre=="ID")
+     		raiz.nombre="INSTANCIAR";
+     	raiz.hijos.addLast(tipo);
      	raiz.hijos.addLast(variables);
      	raiz.hijos.addLast(aux);
  	 }
@@ -347,6 +774,7 @@ Nodo Relacional():
 	{return raiz;}
 }	
 
+
 String operadores_rel():
 {}{
 	 <IIG>		{return  token.image.toString();}
@@ -371,7 +799,7 @@ Nodo Multiplica():
 {
    
     raiz=Potencia() ( <mult> uno=Potencia() { dos = raiz; raiz=new Nodo("POR",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno); } 
-    				 |<div> uno= Potencia(){ dos = raiz; raiz=new Nodo("DIV",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno); }  )*
+    				 |<div> uno= Potencia(){ dos = raiz;  raiz=new Nodo("DIV",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno); }  )*
  {return raiz;}
 }
 
@@ -387,27 +815,29 @@ Nodo Expresion():
 {Nodo r,s,v;Token t;}
 {
 	   <key> t=<IDEN> 	{r=new Nodo("ID",t.beginLine,t.beginColumn,t.image);}
+	| t=<IDEN> 			{r=new Nodo("ID_ATR",t.beginLine,t.beginColumn,t.image);}
 	| t=<NUM> 			{r=new Nodo("NUM",t.beginLine,t.beginColumn,t.image);}
   	| t=<FALSE> 		{r=new Nodo("FALSE",t.beginLine,t.beginColumn,t.image);}
 	| t=<TRUE>			{r=new Nodo("TRUE",t.beginLine,t.beginColumn,t.image);}
   	| t=<CARACTER> 		{r=new Nodo("CHAR",t.beginLine,t.beginColumn,t.image);}
- 	| t=<CADENA>    	{r=new Nodo("CAD",t.beginLine,t.beginColumn,t.image);}
+ 	| t=<CADENA>    	{r=new Nodo("STRING",t.beginLine,t.beginColumn,t.image);}
 	| t=<DATE_EXP>  	{r=new Nodo("DATE",t.beginLine,t.beginColumn,t.image);}
 	| t=<DATE_TIME_EXP> {r=new Nodo("DATE TIME",t.beginLine,t.beginColumn,t.image);}
 	{return r;}
 
 }
 
-String Tipo_Var():
-{String tipo;}
+Nodo Tipo_Var():
+{String raiz;}
 { 
- <BOOL>		{return token.image.toString();}
-|<CHAR>		{return token.image.toString();}
-|<INTEGER>	{return token.image.toString();}
-|<TEXT>		{return token.image.toString();}
-|<DOUBLE>	{return token.image.toString();}
-|<VACIO>	{return token.image.toString();}
-|<DATE>     {return token.image.toString();}
-|<DATETIME> {return token.image.toString();}
+ <BOOL>		{return new Nodo("BOOL",token.beginLine,token.beginColumn);}
+|<CHAR>		{return new Nodo("CHAR",token.beginLine,token.beginColumn);}
+|<INTEGER>	{return new Nodo("INTEGER",token.beginLine,token.beginColumn);}
+|<TEXT>		{return new Nodo("TEXT",token.beginLine,token.beginColumn);}
+|<DOUBLE>	{return new Nodo("DOUBLE",token.beginLine,token.beginColumn);}
+|<VACIO>	{return new Nodo("VACIO",token.beginLine,token.beginColumn);}
+|<DATE>     {return new Nodo("DATE",token.beginLine,token.beginColumn);}
+|<DATETIME> {return new Nodo("DATETIME",token.beginLine,token.beginColumn);}
+|<IDEN>   	{return new Nodo("ID",token.beginLine,token.beginColumn,token.image);}
 
 }
