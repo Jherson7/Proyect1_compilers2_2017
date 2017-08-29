@@ -1,0 +1,117 @@
+options {
+//LOOKAHEAD=1;
+STATIC = false;
+} 
+
+PARSER_BEGIN(registro_proc)
+package gramatica.registro_proc;
+import ArbolAST.Nodo;
+import javax.swing.JOptionPane;
+
+
+public class registro_proc{
+public static Nodo root=null;
+
+ public Nodo retornarArbol(){
+ 	return root;
+ }
+ public static void main(String args[]) throws ParseException 
+ 	{ 
+		try{
+			registro_proc miParser = new registro_proc(System.in); 
+		    root = miParser .Inicio();
+		    JOptionPane.showMessageDialog(null, "Parseo Correcto", "COMPI2", 1);
+		}catch(ParseException e){
+			System.out.println("Error al parsear, "+e.getMessage());
+			JOptionPane.showMessageDialog(null, "Parseo INCORRECTO", "COMPI2", 0);
+		}
+		
+ 	} 
+} 
+PARSER_END(registro_proc)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| "\f"
+}
+
+/*Palabras Reservadas*/
+TOKEN:
+{
+ <Procedure: "<Proc>">
+|<C_Proc: "</Proc>">
+|<Src: "<src>">
+|<C_Scr: "</src>">
+|<Param: "<params>">
+|<C_Param: "</params>">
+|<Obj: "<Object>">
+|<C_Obj: "</Object>">
+|<Tabla: "<Tabla>">
+|<C_Tabla: "</Tabla>">
+|<Rows: "<rows>">
+|<C_Rows: "</rows>">
+|<INT: "<int>">
+|<BOOL: "<bool>">
+|<TEXT: "<text>">
+|<C_INT: "</int>">
+|<C_BOOL: "</bool>">
+|<C_TEXT: "</text>">
+|<NOMBRE: "<nombre>">
+|<C_NOMBRE: "</nombre>">
+|<PATH: "<path>">
+|<C_PATH: "</path>">
+
+}
+
+/*EXPRESIONES REGULARES*/
+TOKEN :
+{
+  < NUM: <DECIMAL_LITERAL >>
+| < #DECIMAL_LITERAL: ["0"-"9"] (["0"-"9"])*(["."](["0"-"9"])*)? >
+| < IDEN: ["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
+| < CADENA: (~["\"","\n","\t"," "])+ >
+}
+
+
+Nodo Inicio():
+{Nodo raiz,sent;}
+{ 
+   {raiz= new Nodo("registro_proc",0,0);}
+   (r=Procedure()  {raiz.hijos.addLast(r);})+
+   <EOF>
+   {return raiz;}
+  
+}
+
+
+Nodo Procedure():
+{Nodo raiz,param,r;Token a,b;}
+{
+ {param=new Nodo("PARAMETROS",0,0);}
+ <Procedure> 
+ 	<NOMBRE> a=<CADENA> <C_NOMBRE>
+ 	<Param>
+ 		(r=Atributo() {param.hijos.addLast(r);})+
+ 	<C_Param>
+ 	<Src>b=<CADENA><C_Scr>
+ <C_Proc>
+
+ {raiz = new Nodo("PROC",a.beginLine,a.beginColumn,b.image);
+  raiz.hijos.addLast(param);
+  return raiz;}
+}
+
+Nodo Atributo():
+{Nodo raiz;Token a,b;}
+{
+  a=<INT>b=<IDEN><C_INT>
+ |a=<BOOL>b=<IDEN><C_BOOL>
+ |a=<TEXT>b=<IDEN><C_TEXT>
+
+ {raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
+  return raiz;}
+}
