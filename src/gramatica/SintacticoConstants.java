@@ -57,141 +57,161 @@ public interface SintacticoConstants {
   /** RegularExpression Id. */
   int ASIG = 28;
   /** RegularExpression Id. */
-  int key = 29;
+  int aumentos = 29;
   /** RegularExpression Id. */
-  int SI = 30;
+  int key = 30;
   /** RegularExpression Id. */
-  int SINO = 31;
+  int dosp = 31;
   /** RegularExpression Id. */
-  int SELECCIONA = 32;
+  int punto = 32;
   /** RegularExpression Id. */
-  int CASO = 33;
+  int SI = 33;
   /** RegularExpression Id. */
-  int DEFECTO = 34;
+  int SINO = 34;
   /** RegularExpression Id. */
-  int PARA = 35;
+  int SELECCIONA = 35;
   /** RegularExpression Id. */
-  int MIENTRAS = 36;
+  int CASO = 36;
   /** RegularExpression Id. */
-  int DETENER = 37;
+  int DEFECTO = 37;
   /** RegularExpression Id. */
-  int IMPRIMIR = 38;
+  int PARA = 38;
   /** RegularExpression Id. */
-  int FECHA = 39;
+  int MIENTRAS = 39;
   /** RegularExpression Id. */
-  int FECHA_HORA = 40;
+  int DETENER = 40;
   /** RegularExpression Id. */
-  int CONTAR = 41;
+  int IMPRIMIR = 41;
   /** RegularExpression Id. */
-  int BACKUP = 42;
+  int FECHA = 42;
   /** RegularExpression Id. */
-  int USQLDUMP = 43;
+  int FECHA_HORA = 43;
   /** RegularExpression Id. */
-  int COMPLETO = 44;
+  int CONTAR = 44;
   /** RegularExpression Id. */
-  int RESTAURAR = 45;
+  int BACKUP = 45;
   /** RegularExpression Id. */
-  int DECLARAR = 46;
+  int USQLDUMP = 46;
   /** RegularExpression Id. */
-  int DENEGAR = 47;
+  int COMPLETO = 47;
   /** RegularExpression Id. */
-  int OTORGAR = 48;
+  int RESTAURAR = 48;
   /** RegularExpression Id. */
-  int SELECCIONAR = 49;
+  int DECLARAR = 49;
   /** RegularExpression Id. */
-  int BORRAR = 50;
+  int DENEGAR = 50;
   /** RegularExpression Id. */
-  int ORDENAR = 51;
+  int OTORGAR = 51;
   /** RegularExpression Id. */
-  int POR = 52;
+  int SELECCIONAR = 52;
   /** RegularExpression Id. */
-  int AGREGAR = 53;
+  int BORRAR = 53;
   /** RegularExpression Id. */
-  int QUITAR = 54;
+  int ORDENAR = 54;
   /** RegularExpression Id. */
-  int ACTUALIZAR = 55;
+  int POR = 55;
   /** RegularExpression Id. */
-  int INSERTAR = 56;
+  int AGREGAR = 56;
   /** RegularExpression Id. */
-  int EN = 57;
+  int QUITAR = 57;
   /** RegularExpression Id. */
-  int DONDE = 58;
+  int ACTUALIZAR = 58;
   /** RegularExpression Id. */
-  int VALORES = 59;
+  int INSERTAR = 59;
   /** RegularExpression Id. */
-  int ALTERAR = 60;
+  int EN = 60;
   /** RegularExpression Id. */
-  int USAR = 61;
+  int DONDE = 61;
   /** RegularExpression Id. */
-  int USUARIO = 62;
+  int VALORES = 62;
   /** RegularExpression Id. */
-  int RETORNO = 63;
+  int ALTERAR = 63;
   /** RegularExpression Id. */
-  int FUNCION = 64;
+  int USAR = 64;
   /** RegularExpression Id. */
-  int PROCEDIMIENTO = 65;
+  int USUARIO = 65;
   /** RegularExpression Id. */
-  int OBJECTO = 66;
+  int RETORNO = 66;
   /** RegularExpression Id. */
-  int BASE_DATOS = 67;
+  int FUNCION = 67;
   /** RegularExpression Id. */
-  int TABLA = 68;
+  int PROCEDIMIENTO = 68;
   /** RegularExpression Id. */
-  int CREAR = 69;
+  int OBJECTO = 69;
   /** RegularExpression Id. */
-  int PK = 70;
+  int BASE_DATOS = 70;
   /** RegularExpression Id. */
-  int AUTO_INCREMENT = 71;
+  int TABLA = 71;
   /** RegularExpression Id. */
-  int FK = 72;
+  int CREAR = 72;
   /** RegularExpression Id. */
-  int NOT_NULL = 73;
+  int PK = 73;
   /** RegularExpression Id. */
-  int NULO = 74;
+  int AUTO_INCREMENT = 74;
   /** RegularExpression Id. */
-  int BOOL = 75;
+  int FK = 75;
   /** RegularExpression Id. */
-  int CHAR = 76;
+  int NOT_NULL = 76;
   /** RegularExpression Id. */
-  int INTEGER = 77;
+  int NULO = 77;
   /** RegularExpression Id. */
-  int TEXT = 78;
+  int COLOCAR = 78;
   /** RegularExpression Id. */
-  int DOUBLE = 79;
+  int PASS = 79;
   /** RegularExpression Id. */
-  int VACIO = 80;
+  int CAMBIAR = 80;
   /** RegularExpression Id. */
-  int DATE = 81;
+  int ELIMINAR = 81;
   /** RegularExpression Id. */
-  int DATETIME = 82;
+  int ORDER = 82;
   /** RegularExpression Id. */
-  int NUM = 83;
+  int DE = 83;
   /** RegularExpression Id. */
-  int DECIMAL_LITERAL = 84;
+  int PERMISOS = 84;
   /** RegularExpression Id. */
-  int FALSE = 85;
+  int BOOL = 85;
   /** RegularExpression Id. */
-  int TRUE = 86;
+  int CHAR = 86;
   /** RegularExpression Id. */
-  int IDEN = 87;
+  int INTEGER = 87;
   /** RegularExpression Id. */
-  int CARACTER = 88;
+  int TEXT = 88;
   /** RegularExpression Id. */
-  int VAL_CARAC = 89;
+  int DOUBLE = 89;
   /** RegularExpression Id. */
-  int CADENA = 90;
+  int VACIO = 90;
   /** RegularExpression Id. */
-  int DATE_EXP = 91;
+  int DATE = 91;
   /** RegularExpression Id. */
-  int DIA = 92;
+  int DATETIME = 92;
   /** RegularExpression Id. */
-  int MES = 93;
+  int NUM = 93;
   /** RegularExpression Id. */
-  int ANIO = 94;
+  int DECIMAL_LITERAL = 94;
   /** RegularExpression Id. */
-  int DATE_TIME_EXP = 95;
+  int FALSE = 95;
   /** RegularExpression Id. */
-  int HOUR = 96;
+  int TRUE = 96;
+  /** RegularExpression Id. */
+  int IDEN = 97;
+  /** RegularExpression Id. */
+  int CARACTER = 98;
+  /** RegularExpression Id. */
+  int VAL_CARAC = 99;
+  /** RegularExpression Id. */
+  int CADENA = 100;
+  /** RegularExpression Id. */
+  int DATE_EXP = 101;
+  /** RegularExpression Id. */
+  int DIA = 102;
+  /** RegularExpression Id. */
+  int MES = 103;
+  /** RegularExpression Id. */
+  int ANIO = 104;
+  /** RegularExpression Id. */
+  int DATE_TIME_EXP = 105;
+  /** RegularExpression Id. */
+  int HOUR = 106;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -227,7 +247,10 @@ public interface SintacticoConstants {
     "\";\"",
     "\",\"",
     "\"=\"",
+    "\"--|++\"",
     "\"@\"",
+    "\":\"",
+    "\".\"",
     "\"SI\"",
     "\"SINO\"",
     "\"SELECCIONA\"",
@@ -273,6 +296,13 @@ public interface SintacticoConstants {
     "\"Llave_Foranea\"",
     "\"No Nulo\"",
     "\"Nulo\"",
+    "\"COLOCAR\"",
+    "\"password\"",
+    "\"CAMBIAR\"",
+    "\"ELIMINAR\"",
+    "\"ASC|DESC\"",
+    "\"DE\"",
+    "\"PERMISOS\"",
     "\"BOOL\"",
     "\"caracter\"",
     "\"INTEGER\"",
@@ -295,6 +325,8 @@ public interface SintacticoConstants {
     "<ANIO>",
     "<DATE_TIME_EXP>",
     "<HOUR>",
+    "\"<<\"",
+    "\">>\"",
   };
 
 }

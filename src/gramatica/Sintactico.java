@@ -51,7 +51,6 @@ raiz.hijos.addLast(sent);
     case CREAR:{
       jj_consume_token(CREAR);
       raiz = Sentencias_Crear();
-      jj_consume_token(ptc);
       break;
       }
     case USAR:{
@@ -76,11 +75,13 @@ raiz= new Nodo("USAR",v.beginLine,v.beginColumn,v.image);
       jj_consume_token(BASE_DATOS);
       v = jj_consume_token(IDEN);
 raiz = new Nodo("BASE_DATOS",v.beginLine,v.beginColumn,v.image);
+      jj_consume_token(ptc);
       break;
       }
     case TABLA:{
       jj_consume_token(TABLA);
       raiz = Sentencias_Tabla();
+      jj_consume_token(ptc);
       break;
       }
     case PROCEDIMIENTO:{
@@ -96,6 +97,7 @@ raiz = new Nodo("BASE_DATOS",v.beginLine,v.beginColumn,v.image);
     case USUARIO:{
       jj_consume_token(USUARIO);
       raiz = Crear_Usuario();
+      jj_consume_token(ptc);
       break;
       }
     case OBJECTO:{
@@ -103,6 +105,7 @@ raiz = new Nodo("BASE_DATOS",v.beginLine,v.beginColumn,v.image);
       v = jj_consume_token(IDEN);
       jj_consume_token(apar);
 raiz = new Nodo("OBJECTO",v.beginLine,v.beginColumn,v.image);
+      jj_consume_token(ptc);
       label_2:
       while (true) {
         sent = Sentencias_Objeto();
@@ -434,23 +437,28 @@ raiz=new Nodo("PARAMETRO",t.beginLine,t.beginColumn);
       }
     case RETORNO:{
       sent = Retornar();
+      jj_consume_token(ptc);
       break;
       }
     case DECLARAR:{
       sent = Declaracion();
+      jj_consume_token(ptc);
       break;
       }
     case key:{
       sent = Asignacion();
+      jj_consume_token(ptc);
       break;
       }
     case CONTAR:{
       sent = Contar();
+      jj_consume_token(ptc);
       break;
       }
     case ALTERAR:{
       jj_consume_token(ALTERAR);
       sent = Alterar();
+      jj_consume_token(ptc);
       break;
       }
     case DETENER:{
@@ -461,6 +469,7 @@ sent=new Nodo("DETENER",token.beginLine,token.beginColumn);
     case ELIMINAR:{
       jj_consume_token(ELIMINAR);
       sent = Sentencias_Eliminar();
+      jj_consume_token(ptc);
       break;
       }
     case INSERTAR:{
@@ -468,12 +477,14 @@ sent=new Nodo("DETENER",token.beginLine,token.beginColumn);
       jj_consume_token(EN);
       jj_consume_token(TABLA);
       sent = Sentencias_Insertar();
+      jj_consume_token(ptc);
       break;
       }
     case ACTUALIZAR:{
       jj_consume_token(ACTUALIZAR);
       jj_consume_token(TABLA);
       sent = Sentencias_Actualizar();
+      jj_consume_token(ptc);
       break;
       }
     case BORRAR:{
@@ -481,33 +492,39 @@ sent=new Nodo("DETENER",token.beginLine,token.beginColumn);
       jj_consume_token(EN);
       jj_consume_token(TABLA);
       sent = Sentencias_Borrar();
+      jj_consume_token(ptc);
       break;
       }
     case SELECCIONAR:{
       jj_consume_token(SELECCIONAR);
       sent = Sentencias_Seleccionar();
+      jj_consume_token(ptc);
       break;
       }
     case OTORGAR:{
       jj_consume_token(OTORGAR);
       jj_consume_token(PERMISOS);
       sent = Sentencias_Permisos();
+      jj_consume_token(ptc);
       break;
       }
     case DENEGAR:{
       jj_consume_token(DENEGAR);
       jj_consume_token(PERMISOS);
       sent = Sentencias_Denengar();
+      jj_consume_token(ptc);
       break;
       }
     case BACKUP:{
       jj_consume_token(BACKUP);
       sent = Sentencias_Backup();
+      jj_consume_token(ptc);
       break;
       }
     case RESTAURAR:{
       jj_consume_token(RESTAURAR);
       sent = Sentencias_Restaurar();
+      jj_consume_token(ptc);
 {if ("" != null) return sent;}
       break;
       }
