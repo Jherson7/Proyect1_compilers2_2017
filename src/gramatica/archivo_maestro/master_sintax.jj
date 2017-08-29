@@ -1,0 +1,83 @@
+options {
+//LOOKAHEAD=1;
+STATIC = false;
+} 
+
+PARSER_BEGIN(master_sintax)
+package gramatica.archivo_maestro;
+import ArbolAST.Nodo;
+import javax.swing.JOptionPane;
+
+
+public class master_sintax{
+public static Nodo root=null;
+
+ public Nodo retornarArbol(){
+ 	return root;
+ }
+ public static void main(String args[]) throws ParseException 
+ 	{ 
+		try{
+			master_sintax miParser = new master_sintax(System.in); 
+		    root = miParser .Inicio();
+		    JOptionPane.showMessageDialog(null, "Parseo Correcto", "COMPI2", 1);
+		}catch(ParseException e){
+			System.out.println("Error al parsear, "+e.getMessage());
+			JOptionPane.showMessageDialog(null, "Parseo INCORRECTO", "COMPI2", 0);
+		}
+		
+ 	} 
+} 
+PARSER_END(master_sintax)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| "\f"
+}
+
+/*Palabras Reservadas*/
+TOKEN:
+{
+ <DB: "<DB>">
+|<C_DB: "</DB>">
+|<NOMBRE: "<nombre>">
+|<C_NOMBRE: "</nombre>">
+|<PATH: "<path>">
+|<C_PATH: "</path>">
+
+}
+
+/*EXPRESIONES REGULARES*/
+TOKEN :
+{
+  < NUM: <DECIMAL_LITERAL >>
+| < #DECIMAL_LITERAL: ["0"-"9"] (["0"-"9"])*(["."](["0"-"9"])*)? >
+| < IDEN: ["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
+| < CADENA: (~["\"","\n","\t"," "])+ >
+}
+
+
+Nodo Inicio():
+{Nodo raiz,sent;}
+{ 
+   {raiz= new Nodo("maestro",0,0);}
+   (sent=Master() {raiz.hijos.addLast(sent);})*<EOF>
+   {return raiz;}
+  
+}
+
+Nodo Master():
+{Nodo raiz;Token a,b;}
+{
+ <DB> 
+ 	<NOMBRE>a=<IDEN> <C_NOMBRE>
+ 	<PATH> b=<CADENA> <C_PATH>
+ <C_DB>
+
+ {raiz = new Nodo("DB",a.beginLine,a.beginColumn,a.image,b.image);
+  return raiz;}
+}
