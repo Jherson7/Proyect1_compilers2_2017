@@ -42,6 +42,15 @@ public class Nodo {
         this.hijos.addLast(new Nodo(hijo1,fila,columna));
         this.hijos.addLast(new Nodo(hijo2,fila,columna));
     }
+     public Nodo(String nombre, int fila, int columna,Nodo hijo1,String hijo2) {
+        this.hijos = new LinkedList<>();
+        this.nombre = nombre;
+        this.fila = fila;
+        this.columna = columna;
+        this.hijos.addLast(hijo1);
+        this.hijos.addLast(new Nodo(hijo2,fila,columna));
+    }
+     
     
     
 }
