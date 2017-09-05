@@ -12,15 +12,19 @@ import java.util.LinkedList;
  * @author Jherson Sazo
  */
 public class tabla {
+    
     public String nombre;
+    public String ruta;
     public LinkedList<atributos> atributos;
     public boolean primary;
     public boolean auto_inc;
     public int counter;
+    //insert de objetos de la tabla
     
     
-    public tabla(String nom) {
+    public tabla(String nom,String ruta) {
         this.nombre=nom;
+        this.ruta=ruta;
         this.atributos=new LinkedList<>();
         this.primary=false;
         this.auto_inc=false;

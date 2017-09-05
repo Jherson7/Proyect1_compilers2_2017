@@ -73,71 +73,71 @@ public interface SintacticoConstants {
   /** RegularExpression Id. */
   int CASO = 36;
   /** RegularExpression Id. */
-  int DEFECTO = 37;
+  int OBJECTO = 37;
   /** RegularExpression Id. */
-  int PARA = 38;
+  int DEFECTO = 38;
   /** RegularExpression Id. */
-  int MIENTRAS = 39;
+  int PARA = 39;
   /** RegularExpression Id. */
-  int DETENER = 40;
+  int MIENTRAS = 40;
   /** RegularExpression Id. */
-  int IMPRIMIR = 41;
+  int DETENER = 41;
   /** RegularExpression Id. */
-  int FECHA = 42;
+  int IMPRIMIR = 42;
   /** RegularExpression Id. */
-  int FECHA_HORA = 43;
+  int FECHA = 43;
   /** RegularExpression Id. */
-  int CONTAR = 44;
+  int FECHA_HORA = 44;
   /** RegularExpression Id. */
-  int BACKUP = 45;
+  int CONTAR = 45;
   /** RegularExpression Id. */
-  int USQLDUMP = 46;
+  int BACKUP = 46;
   /** RegularExpression Id. */
-  int COMPLETO = 47;
+  int USQLDUMP = 47;
   /** RegularExpression Id. */
-  int RESTAURAR = 48;
+  int COMPLETO = 48;
   /** RegularExpression Id. */
-  int DECLARAR = 49;
+  int RESTAURAR = 49;
   /** RegularExpression Id. */
-  int DENEGAR = 50;
+  int DECLARAR = 50;
   /** RegularExpression Id. */
-  int OTORGAR = 51;
+  int DENEGAR = 51;
   /** RegularExpression Id. */
-  int SELECCIONAR = 52;
+  int OTORGAR = 52;
   /** RegularExpression Id. */
-  int BORRAR = 53;
+  int SELECCIONAR = 53;
   /** RegularExpression Id. */
-  int ORDENAR = 54;
+  int BORRAR = 54;
   /** RegularExpression Id. */
-  int POR = 55;
+  int ORDENAR = 55;
   /** RegularExpression Id. */
-  int AGREGAR = 56;
+  int POR = 56;
   /** RegularExpression Id. */
-  int QUITAR = 57;
+  int AGREGAR = 57;
   /** RegularExpression Id. */
-  int ACTUALIZAR = 58;
+  int QUITAR = 58;
   /** RegularExpression Id. */
-  int INSERTAR = 59;
+  int ACTUALIZAR = 59;
   /** RegularExpression Id. */
-  int EN = 60;
+  int INSERTAR = 60;
   /** RegularExpression Id. */
-  int DONDE = 61;
+  int EN = 61;
   /** RegularExpression Id. */
-  int VALORES = 62;
+  int DONDE = 62;
   /** RegularExpression Id. */
-  int ALTERAR = 63;
+  int VALORES = 63;
   /** RegularExpression Id. */
-  int USAR = 64;
+  int ALTERAR = 64;
   /** RegularExpression Id. */
-  int USUARIO = 65;
+  int USAR = 65;
   /** RegularExpression Id. */
-  int RETORNO = 66;
+  int USUARIO = 66;
   /** RegularExpression Id. */
-  int FUNCION = 67;
+  int RETORNO = 67;
   /** RegularExpression Id. */
-  int PROCEDIMIENTO = 68;
+  int FUNCION = 68;
   /** RegularExpression Id. */
-  int OBJECTO = 69;
+  int PROCEDIMIENTO = 69;
   /** RegularExpression Id. */
   int BASE_DATOS = 70;
   /** RegularExpression Id. */
@@ -255,6 +255,7 @@ public interface SintacticoConstants {
     "\"SINO\"",
     "\"SELECCIONA\"",
     "\"CASO\"",
+    "\"OBJETO\"",
     "\"DEFECTO\"",
     "\"PARA\"",
     "\"MIENTRAS\"",
@@ -287,7 +288,6 @@ public interface SintacticoConstants {
     "\"RETORNO\"",
     "\"FUNCION\"",
     "\"PROCEDIMIENTO\"",
-    "\"OBJECTO\"",
     "\"BASE_DATOS\"",
     "\"TABLA\"",
     "\"CREAR\"",

@@ -47,13 +47,29 @@ public interface registro_dbConstants {
   /** RegularExpression Id. */
   int C_PATH = 23;
   /** RegularExpression Id. */
-  int NUM = 24;
+  int Crs = 24;
   /** RegularExpression Id. */
-  int DECIMAL_LITERAL = 25;
+  int C_Crs = 25;
   /** RegularExpression Id. */
-  int IDEN = 26;
+  int PK = 26;
   /** RegularExpression Id. */
-  int CADENA = 27;
+  int AUTO_INC = 27;
+  /** RegularExpression Id. */
+  int FK = 28;
+  /** RegularExpression Id. */
+  int NULO = 29;
+  /** RegularExpression Id. */
+  int NOT_NULL = 30;
+  /** RegularExpression Id. */
+  int coma = 31;
+  /** RegularExpression Id. */
+  int NUM = 32;
+  /** RegularExpression Id. */
+  int DECIMAL_LITERAL = 33;
+  /** RegularExpression Id. */
+  int IDEN = 34;
+  /** RegularExpression Id. */
+  int CADENA = 35;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -74,16 +90,24 @@ public interface registro_dbConstants {
     "\"</Tabla>\"",
     "\"<rows>\"",
     "\"</rows>\"",
-    "\"<int>\"",
+    "\"<integer>\"",
     "\"<bool>\"",
     "\"<text>\"",
-    "\"</int>\"",
+    "\"</integer>\"",
     "\"</bool>\"",
     "\"</text>\"",
     "\"<nombre>\"",
     "\"</nombre>\"",
     "\"<path>\"",
     "\"</path>\"",
+    "\"<crs>\"",
+    "\"</crs>\"",
+    "\"PK\"",
+    "\"inc\"",
+    "\"FK\"",
+    "\"Nulo\"",
+    "\"No Nulo\"",
+    "\",\"",
     "<NUM>",
     "<DECIMAL_LITERAL>",
     "<IDEN>",

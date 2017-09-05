@@ -1,0 +1,36 @@
+
+/*//  | < CADENA: (~["\"","\n","\t"])+ >*/
+
+
+
+CREAR BASE_DATOS prueba;
+USAR prueba;
+
+
+crear objeto Empresa (INTEGER codigo, TEXT nombre, TEXT telefono);
+
+CREAR USUARIO usuario1 COLOCAR password = "holaMundo";
+
+CREAR TABLA Estudiante (
+	INTEGER id Llave_Primaria Autoincrementable, 
+	TEXT Nombre No Nulo,
+	DATE fh_nac No Nulo,
+	BOOL trabaja
+);
+
+
+CREAR TABLA Estudiante2 (
+	INTEGER id Llave_Primaria Autoincrementable, 
+	INTEGER curso LLave_Foranea CURSO idCurso
+);
+
+
+<Tabla>
+<nombre>nombre_tabla1</nombre>
+<path>C:/Documentos/BD/nombre_tabla1.usac</path>
+<rows>
+<int>Nombre_campo1 <crs> </crs></int>
+<text>Nombre_campo2</text>
+<bool>Nombre_campo3</bool>
+</rows>
+</Tabla>

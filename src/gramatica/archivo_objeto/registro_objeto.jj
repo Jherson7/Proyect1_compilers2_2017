@@ -58,6 +58,11 @@ TOKEN:
 |<C_NOMBRE: "</nombre>">
 |<PATH: "<path>">
 |<C_PATH: "</path>">
+|<NOT_NULL:"No Nulo">
+|<NULO:"Nulo">
+|<PK:"Llave_Primaria">
+|<AUTO_INCREMENT: "Autoincrementable">
+|<FK:"Llave_Foranea">
 
 }
 
