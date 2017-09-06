@@ -19,6 +19,7 @@ public class tabla {
     public boolean primary;
     public boolean auto_inc;
     public int counter;
+    public LinkedList<registro_tabla> registros;
     //insert de objetos de la tabla
     
     
@@ -26,6 +27,7 @@ public class tabla {
         this.nombre=nom;
         this.ruta=ruta;
         this.atributos=new LinkedList<>();
+        this.registros=new LinkedList<>();
         this.primary=false;
         this.auto_inc=false;
         this.counter=1;
@@ -35,6 +37,7 @@ public class tabla {
         this.nombre = nombre;
         this.atributos = atributos;
         this.primary=false;
+        this.registros=new LinkedList<>();
     }
     
     

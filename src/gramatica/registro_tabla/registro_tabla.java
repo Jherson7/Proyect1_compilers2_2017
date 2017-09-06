@@ -24,7 +24,7 @@ public static Nodo root=null;
 
         }
 
-  final public Nodo Inicio() throws ParseException {Nodo raiz,r;
+  final public Nodo Inicio() throws ParseException {Nodo raiz,sent;
 raiz= new Nodo("registro_tabla",0,0);
     label_1:
     while (true) {
@@ -75,20 +75,21 @@ rows.hijos.addLast(r);
       a = jj_consume_token(INT);
       b = jj_consume_token(IDEN);
       jj_consume_token(C_INT);
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
       break;
       }
     case BOOL:{
       a = jj_consume_token(BOOL);
       b = jj_consume_token(IDEN);
       jj_consume_token(C_BOOL);
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
       break;
       }
     case TEXT:{
       a = jj_consume_token(TEXT);
       b = jj_consume_token(IDEN);
       jj_consume_token(C_TEXT);
-raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
-  {if ("" != null) return raiz;}
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
       break;
       }
     default:

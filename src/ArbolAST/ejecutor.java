@@ -189,7 +189,7 @@ public class ejecutor {
 
     private boolean comprobarForeingKey(Nodo raiz, tabla tl, atributos atri) {
        String nombre = raiz.hijos.get(0).nombre;
-       String atributo = raiz.hijos.get(0).nombre;
+       String atributo = raiz.hijos.get(1).nombre;
        
         try {
             tabla auxt = actual.tablas.get(nombre);
@@ -286,7 +286,11 @@ public class ejecutor {
         try {
             FileWriter fichero = new FileWriter(actual.direccion+actual.nombre+".usac");
             // 
-            fichero.write(text+cont);//creamos el archivo de la tabla
+            fichero.write(text+cont);
+            
+            fichero = new FileWriter(actual.direccion+"\\TABLAS\\"+tl.nombre+".usac");//creamos el archivo de la tabla
+            // 
+            fichero.write("");
             fichero.close();//cerramos el escritor
             
         } catch (Exception ex) {

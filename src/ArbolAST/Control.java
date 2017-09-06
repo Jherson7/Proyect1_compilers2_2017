@@ -134,8 +134,8 @@ public class Control {
            //
            FileWriter fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\"+base.nombre+".usac");
            fichero.write("");
-           fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\tabla.usac");
-           fichero.write("");
+//           fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\tabla.usac");
+//           fichero.write("");
            fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\procedimientos.usac");
            fichero.write("");
            fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\funciones.usac");

@@ -5,14 +5,17 @@ import ArbolAST.Nodo;
 import ArbolAST.ejecutor;
 import base_datos.atributos;
 import base_datos.bd;
+import base_datos.nodo_tabla;
 import base_datos.tabla;
 import gramatica.db.registro_db;
+import gramatica.registro_tabla.registro_tabla;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -54,7 +57,6 @@ public class levantarBase {
         }
     }
     
-    
     private static String retornarContenidoArchivo(String ruta){
        String texto="";
         
@@ -92,6 +94,20 @@ public class levantarBase {
         return raiz;
     }
 
+    private static Nodo retornarRegistroTabla(String texto){
+        Nodo raiz = null;
+        StringReader lectura = new StringReader(texto);
+        registro_tabla ej = null;
+        ej = new registro_tabla(lectura);
+        try {
+            raiz = ej.Inicio();
+        } catch (gramatica.registro_tabla.ParseException ex) {
+            System.out.println(ex);
+            JOptionPane.showMessageDialog(null, "ERROR Al parsear TABLA", "ERROR", 0);
+        }
+        return raiz;
+    }
+    
     private static void recorrerReg(Nodo raiz, bd base) {
         switch (raiz.nombre) {
             case "registro_db":
@@ -150,8 +166,46 @@ public class levantarBase {
        }
         if(!base.tablas.containsKey(nombre)){
             base.tablas.put(nombre,nueva);
+            cargarRegistrosTabla(nueva);//llenarle los registros a la tabla
         }//marcar error
     }
+    
+    private static void cargarRegistrosTabla(tabla tl){
+        String cont = retornarContenidoArchivo(tl.ruta);
+        Nodo raiz = retornarRegistroTabla(cont);
+        if(raiz!=null){
+            for(Nodo r: raiz.hijos)
+                guardarRegistroTabla(tl, raiz);
+        }
+    }
+    
+    private static void guardarRegistroTabla(tabla tl,Nodo raiz){
+        LinkedList<atributos> lista = tl.atributos;
+        atributos aux;
+        Nodo auxi;
+        
+        base_datos.registro_tabla reg_tabla=new base_datos.registro_tabla();
+        for(int i=0;i<raiz.hijos.size();i++){//recorrer los atributos
+            aux=lista.get(i);
+            auxi=raiz.hijos.get(i);
+            
+            nodo_tabla nodo = new nodo_tabla(auxi.hijos.get(0).nombre,auxi.hijos.get(1).nombre);
+            if(aux.auto_inc)
+                nodo.auto_inc=true;
+            if(aux.primary_key)
+                nodo.pk=true;
+            if(aux.foreing_key)
+                nodo.fk=true;
+            if(aux.nulo)
+                nodo.nulo=true;
+            
+            reg_tabla.registro.addLast(nodo);//insercion de registros a la tabla
+            
+        }
+        tl.registros.addLast(reg_tabla);//insercion de registros a la tabla
+    }
+    
+    
 }
 
 
