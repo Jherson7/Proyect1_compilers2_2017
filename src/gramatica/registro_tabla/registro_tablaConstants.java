@@ -11,49 +11,19 @@ public interface registro_tablaConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int Procedure = 6;
+  int MAYOR = 6;
   /** RegularExpression Id. */
-  int C_Proc = 7;
+  int MENOR = 7;
   /** RegularExpression Id. */
-  int Obj = 8;
+  int SLASH = 8;
   /** RegularExpression Id. */
-  int C_Obj = 9;
+  int Rows = 9;
   /** RegularExpression Id. */
-  int Tabla = 10;
+  int C_Rows = 10;
   /** RegularExpression Id. */
-  int C_Tabla = 11;
+  int IDEN = 11;
   /** RegularExpression Id. */
-  int Rows = 12;
-  /** RegularExpression Id. */
-  int C_Rows = 13;
-  /** RegularExpression Id. */
-  int INT = 14;
-  /** RegularExpression Id. */
-  int BOOL = 15;
-  /** RegularExpression Id. */
-  int TEXT = 16;
-  /** RegularExpression Id. */
-  int C_INT = 17;
-  /** RegularExpression Id. */
-  int C_BOOL = 18;
-  /** RegularExpression Id. */
-  int C_TEXT = 19;
-  /** RegularExpression Id. */
-  int NOMBRE = 20;
-  /** RegularExpression Id. */
-  int C_NOMBRE = 21;
-  /** RegularExpression Id. */
-  int PATH = 22;
-  /** RegularExpression Id. */
-  int C_PATH = 23;
-  /** RegularExpression Id. */
-  int NUM = 24;
-  /** RegularExpression Id. */
-  int DECIMAL_LITERAL = 25;
-  /** RegularExpression Id. */
-  int IDEN = 26;
-  /** RegularExpression Id. */
-  int CADENA = 27;
+  int C_IDE = 12;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -66,28 +36,13 @@ public interface registro_tablaConstants {
     "\"\\n\"",
     "\"\\r\"",
     "\"\\f\"",
-    "\"<Procedure>\"",
-    "\"</Procedure>\"",
-    "\"<Object>\"",
-    "\"</Object>\"",
-    "\"<Tabla>\"",
-    "\"</Tabla>\"",
+    "\">\"",
+    "\"<\"",
+    "\"/\"",
     "\"<rows>\"",
     "\"</rows>\"",
-    "\"<integer>\"",
-    "\"<bool>\"",
-    "\"<text>\"",
-    "\"</integer>\"",
-    "\"</bool>\"",
-    "\"</text>\"",
-    "\"<nombre>\"",
-    "\"</nombre>\"",
-    "\"<path>\"",
-    "\"</path>\"",
-    "<NUM>",
-    "<DECIMAL_LITERAL>",
     "<IDEN>",
-    "<CADENA>",
+    "<C_IDE>",
   };
 
 }

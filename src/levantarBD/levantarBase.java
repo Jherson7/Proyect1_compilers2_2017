@@ -103,7 +103,7 @@ public class levantarBase {
             raiz = ej.Inicio();
         } catch (gramatica.registro_tabla.ParseException ex) {
             System.out.println(ex);
-            JOptionPane.showMessageDialog(null, "ERROR Al parsear TABLA", "ERROR", 0);
+            //JOptionPane.showMessageDialog(null, "ERROR Al parsear TABLA", "ERROR", 0);
         }
         return raiz;
     }
@@ -175,7 +175,7 @@ public class levantarBase {
         Nodo raiz = retornarRegistroTabla(cont);
         if(raiz!=null){
             for(Nodo r: raiz.hijos)
-                guardarRegistroTabla(tl, raiz);
+                guardarRegistroTabla(tl, r);
         }
     }
     
@@ -185,10 +185,15 @@ public class levantarBase {
         Nodo auxi;
         
         base_datos.registro_tabla reg_tabla=new base_datos.registro_tabla();
+        
         for(int i=0;i<raiz.hijos.size();i++){//recorrer los atributos
             aux=lista.get(i);
             auxi=raiz.hijos.get(i);
             
+            //auxi en hijo 0 tiene el tipo de atributo
+            //`` en hijo 1 tiene el valor del atributo
+            
+            Nodo auxia=auxi.hijos.get(1);
             nodo_tabla nodo = new nodo_tabla(auxi.hijos.get(0).nombre,auxi.hijos.get(1).nombre);
             if(aux.auto_inc)
                 nodo.auto_inc=true;

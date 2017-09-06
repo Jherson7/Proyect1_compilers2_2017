@@ -109,7 +109,9 @@ rows= new Nodo("filas",0,0);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case INT:
       case BOOL:
-      case TEXT:{
+      case TEXT:
+      case DATE:
+      case DATETIME:{
         ;
         break;
         }
@@ -184,8 +186,44 @@ raiz.hijos.addLast(sent);
 {if ("" != null) return raiz;}
       break;
       }
+    case DATE:{
+      a = jj_consume_token(DATE);
+      b = jj_consume_token(IDEN);
+raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case Crs:{
+        sent = Caracteristicas();
+raiz.hijos.addLast(sent);
+        break;
+        }
+      default:
+        jj_la1[6] = jj_gen;
+        ;
+      }
+      jj_consume_token(C_DATE);
+{if ("" != null) return raiz;}
+      break;
+      }
+    case DATETIME:{
+      a = jj_consume_token(DATETIME);
+      b = jj_consume_token(IDEN);
+raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case Crs:{
+        sent = Caracteristicas();
+raiz.hijos.addLast(sent);
+        break;
+        }
+      default:
+        jj_la1[7] = jj_gen;
+        ;
+      }
+      jj_consume_token(C_DATETIME);
+{if ("" != null) return raiz;}
+      break;
+      }
     default:
-      jj_la1[6] = jj_gen;
+      jj_la1[8] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -209,7 +247,7 @@ raiz.hijos.addLast(sent);
         break;
         }
       default:
-        jj_la1[7] = jj_gen;
+        jj_la1[9] = jj_gen;
         break label_3;
       }
       sent = Crs();
@@ -250,7 +288,7 @@ raiz.hijos.addLast(sent);
       break;
       }
     default:
-      jj_la1[8] = jj_gen;
+      jj_la1[10] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -266,7 +304,7 @@ raiz.hijos.addLast(sent);
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[9];
+  final private int[] jj_la1 = new int[11];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -274,10 +312,10 @@ raiz.hijos.addLast(sent);
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x540,0x540,0x1c000,0x1000000,0x1000000,0x1000000,0x1c000,0x7c000000,0x7c000000,};
+      jj_la1_0 = new int[] {0x540,0x540,0x7c000,0x10000000,0x10000000,0x10000000,0x10000000,0x10000000,0x7c000,0xc0000000,0xc0000000,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7,0x7,};
    }
 
   /** Constructor with InputStream. */
@@ -291,7 +329,7 @@ raiz.hijos.addLast(sent);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 11; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -305,7 +343,7 @@ raiz.hijos.addLast(sent);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 11; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -315,7 +353,7 @@ raiz.hijos.addLast(sent);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 11; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -325,7 +363,7 @@ raiz.hijos.addLast(sent);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 11; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -334,7 +372,7 @@ raiz.hijos.addLast(sent);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 11; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -343,7 +381,7 @@ raiz.hijos.addLast(sent);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 11; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -394,12 +432,12 @@ raiz.hijos.addLast(sent);
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[36];
+    boolean[] la1tokens = new boolean[40];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 11; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -411,7 +449,7 @@ raiz.hijos.addLast(sent);
         }
       }
     }
-    for (int i = 0; i < 36; i++) {
+    for (int i = 0; i < 40; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

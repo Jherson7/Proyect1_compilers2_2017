@@ -33,43 +33,51 @@ public interface registro_dbConstants {
   /** RegularExpression Id. */
   int TEXT = 16;
   /** RegularExpression Id. */
-  int C_INT = 17;
+  int DATE = 17;
   /** RegularExpression Id. */
-  int C_BOOL = 18;
+  int DATETIME = 18;
   /** RegularExpression Id. */
-  int C_TEXT = 19;
+  int C_DATE = 19;
   /** RegularExpression Id. */
-  int NOMBRE = 20;
+  int C_DATETIME = 20;
   /** RegularExpression Id. */
-  int C_NOMBRE = 21;
+  int C_INT = 21;
   /** RegularExpression Id. */
-  int PATH = 22;
+  int C_BOOL = 22;
   /** RegularExpression Id. */
-  int C_PATH = 23;
+  int C_TEXT = 23;
   /** RegularExpression Id. */
-  int Crs = 24;
+  int NOMBRE = 24;
   /** RegularExpression Id. */
-  int C_Crs = 25;
+  int C_NOMBRE = 25;
   /** RegularExpression Id. */
-  int PK = 26;
+  int PATH = 26;
   /** RegularExpression Id. */
-  int AUTO_INC = 27;
+  int C_PATH = 27;
   /** RegularExpression Id. */
-  int FK = 28;
+  int Crs = 28;
   /** RegularExpression Id. */
-  int NULO = 29;
+  int C_Crs = 29;
   /** RegularExpression Id. */
-  int NOT_NULL = 30;
+  int PK = 30;
   /** RegularExpression Id. */
-  int coma = 31;
+  int AUTO_INC = 31;
   /** RegularExpression Id. */
-  int NUM = 32;
+  int FK = 32;
   /** RegularExpression Id. */
-  int DECIMAL_LITERAL = 33;
+  int NULO = 33;
   /** RegularExpression Id. */
-  int IDEN = 34;
+  int NOT_NULL = 34;
   /** RegularExpression Id. */
-  int CADENA = 35;
+  int coma = 35;
+  /** RegularExpression Id. */
+  int NUM = 36;
+  /** RegularExpression Id. */
+  int DECIMAL_LITERAL = 37;
+  /** RegularExpression Id. */
+  int IDEN = 38;
+  /** RegularExpression Id. */
+  int CADENA = 39;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -93,6 +101,10 @@ public interface registro_dbConstants {
     "\"<integer>\"",
     "\"<bool>\"",
     "\"<text>\"",
+    "\"<DATE>\"",
+    "\"<DATETIME>\"",
+    "\"</DATE>\"",
+    "\"</DATETIME>\"",
     "\"</integer>\"",
     "\"</bool>\"",
     "\"</text>\"",

@@ -10,6 +10,7 @@ import ArbolAST.ejecutor;
 import gramatica.ParseException;
 import java.io.StringReader;
 import gramatica.db.registro_db;
+import gramatica.registro_tabla.registro_tabla;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -83,14 +84,16 @@ public class reg_db extends javax.swing.JFrame {
         Nodo raiz;
         if(!jTextArea1.getText().isEmpty()){
             StringReader lectura = new StringReader(jTextArea1.getText());
-            registro_db ej=null;
-            ej = new registro_db(lectura);
+            //registro_db ej=null;
+            registro_tabla ej=null;
+//            ej = new registro_db(lectura);
+              ej = new registro_tabla(lectura);
             try {
                 raiz=ej.Inicio();
                 ejecutor re = new ejecutor();
                 re.recorrer(raiz);
                 System.out.println("Vamo a ver");
-            } catch (gramatica.db.ParseException ex) {
+            } catch (gramatica.registro_tabla.ParseException ex) {
                 System.out.println(ex);
                 JOptionPane.showMessageDialog(this,"ERROR Al parsear","ERROR",0);
             }

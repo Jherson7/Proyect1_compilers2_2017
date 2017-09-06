@@ -24,12 +24,10 @@ public static Nodo root=null;
 
         }
 
-  final public Nodo Inicio() throws ParseException {Nodo raiz,sent;
+  final public Nodo Inicio() throws ParseException {Nodo raiz,r;
 raiz= new Nodo("registro_tabla",0,0);
     label_1:
     while (true) {
-      r = Tabla();
-raiz.hijos.addLast(r);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case Rows:{
         ;
@@ -39,6 +37,8 @@ raiz.hijos.addLast(r);
         jj_la1[0] = jj_gen;
         break label_1;
       }
+      r = Tabla();
+raiz.hijos.addLast(r);
     }
     jj_consume_token(0);
 {if ("" != null) return raiz;}
@@ -53,9 +53,7 @@ rows= new Nodo("filas",0,0);
       r = Atributo();
 rows.hijos.addLast(r);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case INT:
-      case BOOL:
-      case TEXT:{
+      case MENOR:{
         ;
         break;
         }
@@ -69,34 +67,13 @@ rows.hijos.addLast(r);
     throw new Error("Missing return statement in function");
   }
 
-  final public Nodo Atributo() throws ParseException {Nodo raiz;Token a,b;
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case INT:{
-      a = jj_consume_token(INT);
-      b = jj_consume_token(IDEN);
-      jj_consume_token(C_INT);
+  final public Nodo Atributo() throws ParseException {Token a,b;Nodo exp,raiz;
+    jj_consume_token(MENOR);
+    a = jj_consume_token(IDEN);
+    jj_consume_token(MAYOR);
+    b = jj_consume_token(IDEN);
+    jj_consume_token(C_IDE);
 {if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
-      break;
-      }
-    case BOOL:{
-      a = jj_consume_token(BOOL);
-      b = jj_consume_token(IDEN);
-      jj_consume_token(C_BOOL);
-{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
-      break;
-      }
-    case TEXT:{
-      a = jj_consume_token(TEXT);
-      b = jj_consume_token(IDEN);
-      jj_consume_token(C_TEXT);
-{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
-      break;
-      }
-    default:
-      jj_la1[2] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
-    }
     throw new Error("Missing return statement in function");
   }
 
@@ -109,13 +86,13 @@ rows.hijos.addLast(r);
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[3];
+  final private int[] jj_la1 = new int[2];
   static private int[] jj_la1_0;
   static {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x1000,0x1c000,0x1c000,};
+      jj_la1_0 = new int[] {0x200,0x80,};
    }
 
   /** Constructor with InputStream. */
@@ -129,7 +106,7 @@ rows.hijos.addLast(r);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -143,7 +120,7 @@ rows.hijos.addLast(r);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -153,7 +130,7 @@ rows.hijos.addLast(r);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -163,7 +140,7 @@ rows.hijos.addLast(r);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -172,7 +149,7 @@ rows.hijos.addLast(r);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -181,7 +158,7 @@ rows.hijos.addLast(r);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -232,12 +209,12 @@ rows.hijos.addLast(r);
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[28];
+    boolean[] la1tokens = new boolean[13];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -246,7 +223,7 @@ rows.hijos.addLast(r);
         }
       }
     }
-    for (int i = 0; i < 28; i++) {
+    for (int i = 0; i < 13; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

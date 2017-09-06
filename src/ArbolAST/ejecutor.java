@@ -287,6 +287,7 @@ public class ejecutor {
             FileWriter fichero = new FileWriter(actual.direccion+actual.nombre+".usac");
             // 
             fichero.write(text+cont);
+            fichero.close();
             
             fichero = new FileWriter(actual.direccion+"\\TABLAS\\"+tl.nombre+".usac");//creamos el archivo de la tabla
             // 

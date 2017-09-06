@@ -54,6 +54,10 @@ TOKEN:
 |<INT: "<integer>">
 |<BOOL: "<bool>">
 |<TEXT: "<text>">
+|<DATE : "<DATE>">
+|<DATETIME : "<DATETIME>">
+|<C_DATE : "</DATE>">
+|<C_DATETIME : "</DATETIME>">
 |<C_INT: "</integer>">
 |<C_BOOL: "</bool>">
 |<C_TEXT: "</text>">
@@ -168,6 +172,18 @@ Nodo Atributo():
     {raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image); }
  	(sent=Caracteristicas(){raiz.hijos.addLast(sent);})?
     <C_TEXT>
+    {return raiz;}
+
+  |a=<DATE>b=<IDEN>
+    {raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image); }
+  (sent=Caracteristicas(){raiz.hijos.addLast(sent);})?
+    <C_DATE>
+    {return raiz;}
+
+  |a=<DATETIME>b=<IDEN>
+    {raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image); }
+  (sent=Caracteristicas(){raiz.hijos.addLast(sent);})?
+    <C_DATETIME>
     {return raiz;}
 
 }
