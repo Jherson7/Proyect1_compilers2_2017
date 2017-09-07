@@ -18,7 +18,7 @@ public static Nodo root=null;
  public static void main(String args[]) throws ParseException 
  	{ 
 		try{
-			registro_obj miParser = new registro_obj(System.in); 
+			  registro_obj miParser = new registro_obj(System.in); 
 		    root = miParser .Inicio();
 		    JOptionPane.showMessageDialog(null, "Parseo Correcto", "COMPI2", 1);
 		}catch(ParseException e){
@@ -48,6 +48,10 @@ TOKEN:
 |<C_Tabla: "</Tabla>">
 |<Attr: "<attr>">
 |<C_Attr: "</attr>">
+|<DATE: "<DATE>">
+|<DATETIME: "<DATETIME>">
+|<C_DATE: "</DATE>">
+|<C_DATETIME: "</DATETIME>">
 |<INT: "<int>">
 |<BOOL: "<bool>">
 |<TEXT: "<text>">
@@ -80,7 +84,7 @@ Nodo Inicio():
 {Nodo raiz,r;}
 { 
    {raiz= new Nodo("registro_obj",0,0);}
-   (r=Object_U()  {raiz.hijos.addLast(r);})+
+   (r=Object_U()  {raiz.hijos.addLast(r);})*
    <EOF>
    {return raiz;}
   
@@ -111,6 +115,8 @@ Nodo Atributo():
   a=<INT>b=<IDEN><C_INT>
  |a=<BOOL>b=<IDEN><C_BOOL>
  |a=<TEXT>b=<IDEN><C_TEXT>
+ |a=<DATE>b=<IDEN><C_DATE>
+ |a=<DATETIME>b=<IDEN><C_DATETIME>
 
  {raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
   return raiz;}

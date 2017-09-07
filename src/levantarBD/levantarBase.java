@@ -7,6 +7,7 @@ import base_datos.atributos;
 import base_datos.bd;
 import base_datos.nodo_tabla;
 import base_datos.tabla;
+import gramatica.archivo_objeto.registro_obj;
 import gramatica.db.registro_db;
 import gramatica.registro_tabla.registro_tabla;
 import java.io.BufferedReader;
@@ -25,6 +26,8 @@ import javax.swing.JOptionPane;
  * @author Jherson Sazo
  */
 public class levantarBase {
+
+    bd actual=null;
 
     public levantarBase(Nodo raiz) {
       upBase(raiz);
@@ -119,7 +122,7 @@ public class levantarBase {
                 //crearDB(raiz);
                 break;
             case "OBJETO":
-                //crearDB(raiz);
+                crearObjeto(raiz,base);
                 break;
             case "Tabla":
                 agregarTabla(raiz, base);
@@ -210,6 +213,58 @@ public class levantarBase {
         tl.registros.addLast(reg_tabla);//insercion de registros a la tabla
     }
     
+    
+    
+    /*regio de insertar los objetos*/
+    
+    private static void crearObjeto(Nodo raiz,bd base) {
+        String path = raiz.hijos.get(0).nombre;
+        String cont = retornarContenidoArchivo(path);
+        
+        Nodo objetos = retornarRegistroObjetos(cont);
+        
+        if(objetos!=null){
+            recorrerRegObjeto(objetos, base);
+        }
+        
+    }
+    
+    
+    private static Nodo retornarRegistroObjetos(String texto){
+        Nodo raiz = null;
+        StringReader lectura = new StringReader(texto);
+        registro_obj ej = null;
+        ej = new registro_obj(lectura);
+        try {
+            raiz = ej.Inicio();
+        } catch (gramatica.archivo_objeto.ParseException ex) {
+            System.out.println(ex);
+            //JOptionPane.showMessageDialog(null, "ERROR Al parsear TABLA", "ERROR", 0);
+        }
+        return raiz;
+    }
+    
+    
+    private static void recorrerRegObjeto(Nodo raiz, bd base) {
+        switch (raiz.nombre) {
+            case "registro_obj":
+                for (Nodo r : raiz.hijos) {
+                    recorrerRegObjeto(r,base);
+                }
+                break;
+            case "OBJETO":
+                agregarObjeto(raiz,base);
+                break;
+        }
+    }
+     
+     
+    private static void agregarObjeto(Nodo raiz,bd base) {
+        String nombre=raiz.hijos.get(0).nombre;
+        
+        //ciclo for para agarrar los objetos
+        
+    }
     
 }
 

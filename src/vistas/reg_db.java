@@ -84,19 +84,23 @@ public class reg_db extends javax.swing.JFrame {
         Nodo raiz;
         if(!jTextArea1.getText().isEmpty()){
             StringReader lectura = new StringReader(jTextArea1.getText());
-            //registro_db ej=null;
-            registro_tabla ej=null;
-//            ej = new registro_db(lectura);
-              ej = new registro_tabla(lectura);
+            registro_db ej=null;
+            //egistro_tabla ej=null;
+            ej = new registro_db(lectura);
+              //ej = new registro_tabla(lectura);
             try {
                 raiz=ej.Inicio();
                 ejecutor re = new ejecutor();
                 re.recorrer(raiz);
                 System.out.println("Vamo a ver");
-            } catch (gramatica.registro_tabla.ParseException ex) {
+            } catch (gramatica.db.ParseException ex) {
+                Logger.getLogger(reg_db.class.getName()).log(Level.SEVERE, null, ex);
+            } 
+            
+           /* catch (gramatica.registro_tabla.ParseException ex) {
                 System.out.println(ex);
                 JOptionPane.showMessageDialog(this,"ERROR Al parsear","ERROR",0);
-            }
+            }*/
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 

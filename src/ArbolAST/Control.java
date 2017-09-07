@@ -132,14 +132,22 @@ public class Control {
        
        try {
            //
-           FileWriter fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\"+base.nombre+".usac");
-           fichero.write("");
+           FileWriter fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\" + base.nombre + "\\" + base.nombre + ".usac");
+           fichero.write(""
+                   + "<Object> <path>\n"
+                   + "\t"
+                   + "C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\" + base.nombre + "\\objetos.usac"
+                   + "\n\t</path>"
+                   + "\n\t</Object>");
+           fichero.close();
 //           fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\tabla.usac");
 //           fichero.write("");
            fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\procedimientos.usac");
            fichero.write("");
+           fichero.close();
            fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\funciones.usac");
            fichero.write("");
+           fichero.close();
            fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\objetos.usac");
            fichero.write("");
            fichero.close();//actualizamos la base de datos

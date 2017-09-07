@@ -14,7 +14,7 @@ public static Nodo root=null;
  public static void main(String args[]) throws ParseException
         {
                 try{
-                        registro_obj miParser = new registro_obj(System.in);
+                          registro_obj miParser = new registro_obj(System.in);
                     root = miParser .Inicio();
                     JOptionPane.showMessageDialog(null, "Parseo Correcto", "COMPI2", 1);
                 }catch(ParseException e){
@@ -28,8 +28,6 @@ public static Nodo root=null;
 raiz= new Nodo("registro_obj",0,0);
     label_1:
     while (true) {
-      r = Object_U();
-raiz.hijos.addLast(r);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case Obj:{
         ;
@@ -39,6 +37,8 @@ raiz.hijos.addLast(r);
         jj_la1[0] = jj_gen;
         break label_1;
       }
+      r = Object_U();
+raiz.hijos.addLast(r);
     }
     jj_consume_token(0);
 {if ("" != null) return raiz;}
@@ -57,6 +57,8 @@ atrib= new Nodo("ATRIBUTO",0,0);
       r = Atributo();
 atrib.hijos.addLast(r);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case DATE:
+      case DATETIME:
       case INT:
       case BOOL:
       case TEXT:{
@@ -94,6 +96,18 @@ raiz = new Nodo("OBJETO",b.beginLine,b.beginColumn,b.image);
       a = jj_consume_token(TEXT);
       b = jj_consume_token(IDEN);
       jj_consume_token(C_TEXT);
+      break;
+      }
+    case DATE:{
+      a = jj_consume_token(DATE);
+      b = jj_consume_token(IDEN);
+      jj_consume_token(C_DATE);
+      break;
+      }
+    case DATETIME:{
+      a = jj_consume_token(DATETIME);
+      b = jj_consume_token(IDEN);
+      jj_consume_token(C_DATETIME);
 raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
   {if ("" != null) return raiz;}
       break;
@@ -117,11 +131,16 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
   private int jj_gen;
   final private int[] jj_la1 = new int[3];
   static private int[] jj_la1_0;
+  static private int[] jj_la1_1;
   static {
       jj_la1_init_0();
+      jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x40,0x7000,0x7000,};
+      jj_la1_0 = new int[] {0x40,0x73000,0x73000,};
+   }
+   private static void jj_la1_init_1() {
+      jj_la1_1 = new int[] {0x0,0x0,0x0,};
    }
 
   /** Constructor with InputStream. */
@@ -238,7 +257,7 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[26];
+    boolean[] la1tokens = new boolean[35];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -249,10 +268,13 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
           if ((jj_la1_0[i] & (1<<j)) != 0) {
             la1tokens[j] = true;
           }
+          if ((jj_la1_1[i] & (1<<j)) != 0) {
+            la1tokens[32+j] = true;
+          }
         }
       }
     }
-    for (int i = 0; i < 26; i++) {
+    for (int i = 0; i < 35; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

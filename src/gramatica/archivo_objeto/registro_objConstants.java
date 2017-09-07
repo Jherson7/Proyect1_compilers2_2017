@@ -23,33 +23,51 @@ public interface registro_objConstants {
   /** RegularExpression Id. */
   int C_Attr = 11;
   /** RegularExpression Id. */
-  int INT = 12;
+  int DATE = 12;
   /** RegularExpression Id. */
-  int BOOL = 13;
+  int DATETIME = 13;
   /** RegularExpression Id. */
-  int TEXT = 14;
+  int C_DATE = 14;
   /** RegularExpression Id. */
-  int C_INT = 15;
+  int C_DATETIME = 15;
   /** RegularExpression Id. */
-  int C_BOOL = 16;
+  int INT = 16;
   /** RegularExpression Id. */
-  int C_TEXT = 17;
+  int BOOL = 17;
   /** RegularExpression Id. */
-  int NOMBRE = 18;
+  int TEXT = 18;
   /** RegularExpression Id. */
-  int C_NOMBRE = 19;
+  int C_INT = 19;
   /** RegularExpression Id. */
-  int PATH = 20;
+  int C_BOOL = 20;
   /** RegularExpression Id. */
-  int C_PATH = 21;
+  int C_TEXT = 21;
   /** RegularExpression Id. */
-  int NUM = 22;
+  int NOMBRE = 22;
   /** RegularExpression Id. */
-  int DECIMAL_LITERAL = 23;
+  int C_NOMBRE = 23;
   /** RegularExpression Id. */
-  int IDEN = 24;
+  int PATH = 24;
   /** RegularExpression Id. */
-  int CADENA = 25;
+  int C_PATH = 25;
+  /** RegularExpression Id. */
+  int NOT_NULL = 26;
+  /** RegularExpression Id. */
+  int NULO = 27;
+  /** RegularExpression Id. */
+  int PK = 28;
+  /** RegularExpression Id. */
+  int AUTO_INCREMENT = 29;
+  /** RegularExpression Id. */
+  int FK = 30;
+  /** RegularExpression Id. */
+  int NUM = 31;
+  /** RegularExpression Id. */
+  int DECIMAL_LITERAL = 32;
+  /** RegularExpression Id. */
+  int IDEN = 33;
+  /** RegularExpression Id. */
+  int CADENA = 34;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -68,6 +86,10 @@ public interface registro_objConstants {
     "\"</Tabla>\"",
     "\"<attr>\"",
     "\"</attr>\"",
+    "\"<DATE>\"",
+    "\"<DATETIME>\"",
+    "\"</DATE>\"",
+    "\"</DATETIME>\"",
     "\"<int>\"",
     "\"<bool>\"",
     "\"<text>\"",
@@ -78,6 +100,11 @@ public interface registro_objConstants {
     "\"</nombre>\"",
     "\"<path>\"",
     "\"</path>\"",
+    "\"No Nulo\"",
+    "\"Nulo\"",
+    "\"Llave_Primaria\"",
+    "\"Autoincrementable\"",
+    "\"Llave_Foranea\"",
     "<NUM>",
     "<DECIMAL_LITERAL>",
     "<IDEN>",
