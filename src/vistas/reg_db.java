@@ -7,13 +7,20 @@ package vistas;
 
 import ArbolAST.Nodo;
 import ArbolAST.ejecutor;
-import gramatica.ParseException;
 import java.io.StringReader;
 import gramatica.db.registro_db;
-import gramatica.registro_tabla.registro_tabla;
+import gramatica.registro_proc.registro_proc;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.Base64;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
+import levantarBD.prueba;
 /**
  *
  * @author Jherson Sazo
@@ -39,6 +46,7 @@ public class reg_db extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -53,6 +61,13 @@ public class reg_db extends javax.swing.JFrame {
             }
         });
 
+        jButton3.setText("jButton3");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -63,7 +78,9 @@ public class reg_db extends javax.swing.JFrame {
                         .addGap(28, 28, 28)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 483, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(221, 221, 221)
+                        .addGap(112, 112, 112)
+                        .addComponent(jButton3)
+                        .addGap(36, 36, 36)
                         .addComponent(jButton2)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -73,7 +90,9 @@ public class reg_db extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 246, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton2)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton2)
+                    .addComponent(jButton3))
                 .addContainerGap())
         );
 
@@ -84,18 +103,26 @@ public class reg_db extends javax.swing.JFrame {
         Nodo raiz;
         if(!jTextArea1.getText().isEmpty()){
             StringReader lectura = new StringReader(jTextArea1.getText());
-            registro_db ej=null;
+            //registro_db ej=null;
+            registro_proc ej=null;
             //egistro_tabla ej=null;
-            ej = new registro_db(lectura);
+            //ej = new registro_db(lectura);
+            ej = new registro_proc(lectura);
               //ej = new registro_tabla(lectura);
             try {
                 raiz=ej.Inicio();
                 ejecutor re = new ejecutor();
                 re.recorrer(raiz);
                 System.out.println("Vamo a ver");
-            } catch (gramatica.db.ParseException ex) {
+            } 
+            
+            catch (gramatica.registro_proc.ParseException ex) {
+                System.out.println(ex.getMessage());
                 Logger.getLogger(reg_db.class.getName()).log(Level.SEVERE, null, ex);
             } 
+            /*catch (gramatica.db.ParseException ex) {
+                Logger.getLogger(reg_db.class.getName()).log(Level.SEVERE, null, ex);
+            } */
             
            /* catch (gramatica.registro_tabla.ParseException ex) {
                 System.out.println(ex);
@@ -103,6 +130,28 @@ public class reg_db extends javax.swing.JFrame {
             }*/
         }
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        LinkedList<Integer> l = new LinkedList<>();
+        l.add(5);
+        prueba pr = new prueba("Jherson", "sazo", 5, l);
+        
+        try {
+            String string = toString( pr);
+            System.out.println(" Encoded serialized version " );
+            System.out.println( string );
+            prueba some;
+            some = ( prueba ) fromString( string );
+            System.out.println( some );
+        } catch (IOException ex) {
+            Logger.getLogger(reg_db.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(reg_db.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println( "\n\nReconstituted object");
+        
+
+    }//GEN-LAST:event_jButton3ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -140,9 +189,32 @@ public class reg_db extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
+
+
+    /** Read the object from Base64 string. */
+    private static Object fromString(String s) throws IOException,
+            ClassNotFoundException {
+        byte[] data;
+        data = Base64.getDecoder().decode(s);
+        ObjectInputStream ois = new ObjectInputStream(
+                new ByteArrayInputStream(data));
+        Object o = ois.readObject();
+        ois.close();
+        return o;
+    }
+
+    /** Write the object to a Base64 string. */
+    private static String toString( Serializable o ) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream( baos );
+        oos.writeObject( o );
+        oos.close();
+        return Base64.getEncoder().encodeToString(baos.toByteArray()); 
+    }
+
 }

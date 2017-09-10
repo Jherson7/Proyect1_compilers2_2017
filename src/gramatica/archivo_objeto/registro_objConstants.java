@@ -66,8 +66,6 @@ public interface registro_objConstants {
   int DECIMAL_LITERAL = 32;
   /** RegularExpression Id. */
   int IDEN = 33;
-  /** RegularExpression Id. */
-  int CADENA = 34;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -90,10 +88,10 @@ public interface registro_objConstants {
     "\"<DATETIME>\"",
     "\"</DATE>\"",
     "\"</DATETIME>\"",
-    "\"<int>\"",
+    "\"<integer>\"",
     "\"<bool>\"",
     "\"<text>\"",
-    "\"</int>\"",
+    "\"</integer>\"",
     "\"</bool>\"",
     "\"</text>\"",
     "\"<nombre>\"",
@@ -108,7 +106,6 @@ public interface registro_objConstants {
     "<NUM>",
     "<DECIMAL_LITERAL>",
     "<IDEN>",
-    "<CADENA>",
   };
 
 }

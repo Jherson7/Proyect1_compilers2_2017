@@ -49,8 +49,8 @@ raiz.hijos.addLast(r);
 atrib= new Nodo("ATRIBUTO",0,0);
     jj_consume_token(Obj);
     jj_consume_token(NOMBRE);
-    b = jj_consume_token(CADENA);
-    jj_consume_token(NOMBRE);
+    b = jj_consume_token(IDEN);
+    jj_consume_token(C_NOMBRE);
     jj_consume_token(Attr);
     label_2:
     while (true) {
@@ -84,32 +84,35 @@ raiz = new Nodo("OBJETO",b.beginLine,b.beginColumn,b.image);
       a = jj_consume_token(INT);
       b = jj_consume_token(IDEN);
       jj_consume_token(C_INT);
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
       break;
       }
     case BOOL:{
       a = jj_consume_token(BOOL);
       b = jj_consume_token(IDEN);
       jj_consume_token(C_BOOL);
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
       break;
       }
     case TEXT:{
       a = jj_consume_token(TEXT);
       b = jj_consume_token(IDEN);
       jj_consume_token(C_TEXT);
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
       break;
       }
     case DATE:{
       a = jj_consume_token(DATE);
       b = jj_consume_token(IDEN);
       jj_consume_token(C_DATE);
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
       break;
       }
     case DATETIME:{
       a = jj_consume_token(DATETIME);
       b = jj_consume_token(IDEN);
       jj_consume_token(C_DATETIME);
-raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
-  {if ("" != null) return raiz;}
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
       break;
       }
     default:
@@ -257,7 +260,7 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[35];
+    boolean[] la1tokens = new boolean[34];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -274,7 +277,7 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
         }
       }
     }
-    for (int i = 0; i < 35; i++) {
+    for (int i = 0; i < 34; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

@@ -28,16 +28,31 @@ public static Nodo root=null;
 raiz= new Nodo("registro_proc",0,0);
     label_1:
     while (true) {
-      r = Procedure();
-raiz.hijos.addLast(r);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case Procedure:{
+      case Procedure:
+      case FUNC:{
         ;
         break;
         }
       default:
         jj_la1[0] = jj_gen;
         break label_1;
+      }
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case Procedure:{
+        r = Procedure();
+raiz.hijos.addLast(r);
+        break;
+        }
+      case FUNC:{
+        r = Funcion();
+raiz.hijos.addLast(r);
+        break;
+        }
+      default:
+        jj_la1[1] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
       }
     }
     jj_consume_token(0);
@@ -49,32 +64,93 @@ raiz.hijos.addLast(r);
 param=new Nodo("PARAMETROS",0,0);
     jj_consume_token(Procedure);
     jj_consume_token(NOMBRE);
-    a = jj_consume_token(CADENA);
+    a = jj_consume_token(IDEN);
     jj_consume_token(C_NOMBRE);
+raiz = new Nodo("PROC",a.beginLine,a.beginColumn,a.image);
     jj_consume_token(Param);
     label_2:
     while (true) {
-      r = Atributo();
-param.hijos.addLast(r);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case INT:
       case BOOL:
-      case TEXT:{
+      case TEXT:
+      case DATE:
+      case DATETIME:
+      case 40:{
         ;
         break;
         }
       default:
-        jj_la1[1] = jj_gen;
+        jj_la1[2] = jj_gen;
         break label_2;
       }
+      r = Atributo();
+param.hijos.addLast(r);
     }
     jj_consume_token(C_Param);
-    jj_consume_token(Src);
-    b = jj_consume_token(CADENA);
-    jj_consume_token(C_Scr);
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case Src:{
+      jj_consume_token(Src);
+      b = jj_consume_token(CADENA);
+      jj_consume_token(C_Scr);
+raiz.hijos.addLast(new Nodo(b.image,b.beginLine,b.beginColumn));
+      break;
+      }
+    default:
+      jj_la1[3] = jj_gen;
+      ;
+    }
     jj_consume_token(C_Proc);
-raiz = new Nodo("PROC",a.beginLine,a.beginColumn,b.image);
-  raiz.hijos.addLast(param);
+raiz.hijos.addLast(param);
+  {if ("" != null) return raiz;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public Nodo Funcion() throws ParseException {Nodo raiz,param,r;Token a,b;
+param=new Nodo("PARAMETROS",0,0);
+    jj_consume_token(FUNC);
+    jj_consume_token(NOMBRE);
+    a = jj_consume_token(IDEN);
+    jj_consume_token(C_NOMBRE);
+    jj_consume_token(RET);
+    b = jj_consume_token(IDEN);
+    jj_consume_token(C_RET);
+raiz = new Nodo("FUNC",a.beginLine,a.beginColumn,a.image,b.image);
+    jj_consume_token(Param);
+    label_3:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case INT:
+      case BOOL:
+      case TEXT:
+      case DATE:
+      case DATETIME:
+      case 40:{
+        ;
+        break;
+        }
+      default:
+        jj_la1[4] = jj_gen;
+        break label_3;
+      }
+      r = Atributo();
+param.hijos.addLast(r);
+    }
+    jj_consume_token(C_Param);
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case Src:{
+      jj_consume_token(Src);
+      b = jj_consume_token(CADENA);
+      jj_consume_token(C_Scr);
+raiz.hijos.addLast(new Nodo(b.image,b.beginLine,b.beginColumn));
+      break;
+      }
+    default:
+      jj_la1[5] = jj_gen;
+      ;
+    }
+    jj_consume_token(C_FUNC);
+raiz.hijos.addLast(param);
   {if ("" != null) return raiz;}
     throw new Error("Missing return statement in function");
   }
@@ -85,24 +161,51 @@ raiz = new Nodo("PROC",a.beginLine,a.beginColumn,b.image);
       a = jj_consume_token(INT);
       b = jj_consume_token(IDEN);
       jj_consume_token(C_INT);
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
       break;
       }
     case BOOL:{
       a = jj_consume_token(BOOL);
       b = jj_consume_token(IDEN);
       jj_consume_token(C_BOOL);
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
       break;
       }
     case TEXT:{
       a = jj_consume_token(TEXT);
       b = jj_consume_token(IDEN);
       jj_consume_token(C_TEXT);
-raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
-  {if ("" != null) return raiz;}
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
+      break;
+      }
+    case DATE:{
+      a = jj_consume_token(DATE);
+      b = jj_consume_token(IDEN);
+      jj_consume_token(C_DATE);
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
+      break;
+      }
+    case DATETIME:{
+      a = jj_consume_token(DATETIME);
+      b = jj_consume_token(IDEN);
+      jj_consume_token(C_DATETIME);
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
+      break;
+      }
+    case 40:{
+      jj_consume_token(40);
+      a = jj_consume_token(IDEN);
+      jj_consume_token(41);
+      b = jj_consume_token(IDEN);
+      jj_consume_token(40);
+      jj_consume_token(42);
+      jj_consume_token(IDEN);
+      jj_consume_token(41);
+{if ("" != null) return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
       break;
       }
     default:
-      jj_la1[2] = jj_gen;
+      jj_la1[6] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -118,13 +221,18 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[3];
+  final private int[] jj_la1 = new int[7];
   static private int[] jj_la1_0;
+  static private int[] jj_la1_1;
   static {
       jj_la1_init_0();
+      jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x40,0x1c0000,0x1c0000,};
+      jj_la1_0 = new int[] {0x140,0x140,0x1c00000,0x1000,0x1c00000,0x1000,0x1c00000,};
+   }
+   private static void jj_la1_init_1() {
+      jj_la1_1 = new int[] {0x0,0x0,0x103,0x0,0x103,0x0,0x103,};
    }
 
   /** Constructor with InputStream. */
@@ -138,7 +246,7 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -152,7 +260,7 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -162,7 +270,7 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -172,7 +280,7 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -181,7 +289,7 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -190,7 +298,7 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -241,21 +349,24 @@ raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[32];
+    boolean[] la1tokens = new boolean[43];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 7; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
             la1tokens[j] = true;
           }
+          if ((jj_la1_1[i] & (1<<j)) != 0) {
+            la1tokens[32+j] = true;
+          }
         }
       }
     }
-    for (int i = 0; i < 32; i++) {
+    for (int i = 0; i < 43; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

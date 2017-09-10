@@ -15,53 +15,69 @@ public interface registro_procConstants {
   /** RegularExpression Id. */
   int C_Proc = 7;
   /** RegularExpression Id. */
-  int Src = 8;
+  int FUNC = 8;
   /** RegularExpression Id. */
-  int C_Scr = 9;
+  int C_FUNC = 9;
   /** RegularExpression Id. */
-  int Param = 10;
+  int RET = 10;
   /** RegularExpression Id. */
-  int C_Param = 11;
+  int C_RET = 11;
   /** RegularExpression Id. */
-  int Obj = 12;
+  int Src = 12;
   /** RegularExpression Id. */
-  int C_Obj = 13;
+  int C_Scr = 13;
   /** RegularExpression Id. */
-  int Tabla = 14;
+  int Param = 14;
   /** RegularExpression Id. */
-  int C_Tabla = 15;
+  int C_Param = 15;
   /** RegularExpression Id. */
-  int Rows = 16;
+  int Obj = 16;
   /** RegularExpression Id. */
-  int C_Rows = 17;
+  int C_Obj = 17;
   /** RegularExpression Id. */
-  int INT = 18;
+  int Tabla = 18;
   /** RegularExpression Id. */
-  int BOOL = 19;
+  int C_Tabla = 19;
   /** RegularExpression Id. */
-  int TEXT = 20;
+  int Rows = 20;
   /** RegularExpression Id. */
-  int C_INT = 21;
+  int C_Rows = 21;
   /** RegularExpression Id. */
-  int C_BOOL = 22;
+  int INT = 22;
   /** RegularExpression Id. */
-  int C_TEXT = 23;
+  int BOOL = 23;
   /** RegularExpression Id. */
-  int NOMBRE = 24;
+  int TEXT = 24;
   /** RegularExpression Id. */
-  int C_NOMBRE = 25;
+  int C_INT = 25;
   /** RegularExpression Id. */
-  int PATH = 26;
+  int C_BOOL = 26;
   /** RegularExpression Id. */
-  int C_PATH = 27;
+  int C_TEXT = 27;
   /** RegularExpression Id. */
-  int NUM = 28;
+  int NOMBRE = 28;
   /** RegularExpression Id. */
-  int DECIMAL_LITERAL = 29;
+  int C_NOMBRE = 29;
   /** RegularExpression Id. */
-  int IDEN = 30;
+  int PATH = 30;
   /** RegularExpression Id. */
-  int CADENA = 31;
+  int C_PATH = 31;
+  /** RegularExpression Id. */
+  int DATE = 32;
+  /** RegularExpression Id. */
+  int DATETIME = 33;
+  /** RegularExpression Id. */
+  int C_DATE = 34;
+  /** RegularExpression Id. */
+  int C_DATETIME = 35;
+  /** RegularExpression Id. */
+  int NUM = 36;
+  /** RegularExpression Id. */
+  int DECIMAL_LITERAL = 37;
+  /** RegularExpression Id. */
+  int IDEN = 38;
+  /** RegularExpression Id. */
+  int CADENA = 39;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -76,6 +92,10 @@ public interface registro_procConstants {
     "\"\\f\"",
     "\"<Proc>\"",
     "\"</Proc>\"",
+    "\"<Func>\"",
+    "\"</Func>\"",
+    "\"<return>\"",
+    "\"</return>\"",
     "\"<src>\"",
     "\"</src>\"",
     "\"<params>\"",
@@ -86,20 +106,27 @@ public interface registro_procConstants {
     "\"</Tabla>\"",
     "\"<rows>\"",
     "\"</rows>\"",
-    "\"<int>\"",
+    "\"<integer>\"",
     "\"<bool>\"",
     "\"<text>\"",
-    "\"</int>\"",
+    "\"</integer>\"",
     "\"</bool>\"",
     "\"</text>\"",
     "\"<nombre>\"",
     "\"</nombre>\"",
     "\"<path>\"",
     "\"</path>\"",
+    "\"<DATE>\"",
+    "\"<DATETIME>\"",
+    "\"</DATE>\"",
+    "\"</DATETIME>\"",
     "<NUM>",
     "<DECIMAL_LITERAL>",
     "<IDEN>",
     "<CADENA>",
+    "\"<\"",
+    "\">\"",
+    "\"/\"",
   };
 
 }

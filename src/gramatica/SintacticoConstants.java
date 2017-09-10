@@ -169,49 +169,51 @@ public interface SintacticoConstants {
   /** RegularExpression Id. */
   int PERMISOS = 84;
   /** RegularExpression Id. */
-  int BOOL = 85;
+  int UNICO = 85;
   /** RegularExpression Id. */
-  int CHAR = 86;
+  int BOOL = 86;
   /** RegularExpression Id. */
-  int INTEGER = 87;
+  int CHAR = 87;
   /** RegularExpression Id. */
-  int TEXT = 88;
+  int INTEGER = 88;
   /** RegularExpression Id. */
-  int DOUBLE = 89;
+  int TEXT = 89;
   /** RegularExpression Id. */
-  int VACIO = 90;
+  int DOUBLE = 90;
   /** RegularExpression Id. */
-  int DATE = 91;
+  int VACIO = 91;
   /** RegularExpression Id. */
-  int DATETIME = 92;
+  int DATE = 92;
   /** RegularExpression Id. */
-  int NUM = 93;
+  int DATETIME = 93;
   /** RegularExpression Id. */
-  int DECIMAL_LITERAL = 94;
+  int NUM = 94;
   /** RegularExpression Id. */
-  int FALSE = 95;
+  int DECIMAL_LITERAL = 95;
   /** RegularExpression Id. */
-  int TRUE = 96;
+  int FALSE = 96;
   /** RegularExpression Id. */
-  int IDEN = 97;
+  int TRUE = 97;
   /** RegularExpression Id. */
-  int CARACTER = 98;
+  int IDEN = 98;
   /** RegularExpression Id. */
-  int VAL_CARAC = 99;
+  int CARACTER = 99;
   /** RegularExpression Id. */
-  int CADENA = 100;
+  int VAL_CARAC = 100;
   /** RegularExpression Id. */
-  int DATE_EXP = 101;
+  int CADENA = 101;
   /** RegularExpression Id. */
-  int DIA = 102;
+  int DATE_EXP = 102;
   /** RegularExpression Id. */
-  int MES = 103;
+  int DIA = 103;
   /** RegularExpression Id. */
-  int ANIO = 104;
+  int MES = 104;
   /** RegularExpression Id. */
-  int DATE_TIME_EXP = 105;
+  int ANIO = 105;
   /** RegularExpression Id. */
-  int HOUR = 106;
+  int DATE_TIME_EXP = 106;
+  /** RegularExpression Id. */
+  int HOUR = 107;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -303,6 +305,7 @@ public interface SintacticoConstants {
     "\"ASC|DESC\"",
     "\"DE\"",
     "\"PERMISOS\"",
+    "\"UNICO\"",
     "\"BOOL\"",
     "\"caracter\"",
     "\"INTEGER\"",

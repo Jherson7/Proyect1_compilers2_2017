@@ -45,8 +45,8 @@ public class Control {
            usuarios= new HashMap<>();
        if(lista_error==null)
            lista_error=new LinkedList<>();
-       if(levante)
-         levantarBases();
+       //if(levante)   descomentarla para levantar las bases de datos desde los xml
+        // levantarBases();
    }
    
    public static HashMap<String,bd> retornarBases(){
@@ -73,7 +73,7 @@ public class Control {
            texto+=nueva;
       
        bases.put(base.nombre, base);
-       escribirEnMaestro(texto,base);
+       //escribirEnMaestro(texto,base); descomentarla para escribir en xml
    }
    
    private static String retornarArchivoMaestro(){
@@ -106,7 +106,7 @@ public class Control {
 
            crearDirectorios(base);
 
-       } catch (Exception ex) {
+       } catch (IOException ex) {
            ex.printStackTrace();
        }
    }
@@ -138,20 +138,21 @@ public class Control {
                    + "\t"
                    + "C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\" + base.nombre + "\\objetos.usac"
                    + "\n\t</path>"
-                   + "\n\t</Object>");
+                   + "\n\t</Object>\n"
+                   + "<Procedure> <path>\n"
+                   + "\t"
+                   + "C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\" + base.nombre + "\\metodos.usac"
+                   + "\n\t</path>"
+                   + "\n\t</Procedure>\n");
            fichero.close();
 //           fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\tabla.usac");
 //           fichero.write("");
-           fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\procedimientos.usac");
+//           fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\procedimientos.usac");
+//           fichero.write("");
+//           fichero.close();
+           fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\metodos.usac");
            fichero.write("");
            fichero.close();
-           fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\funciones.usac");
-           fichero.write("");
-           fichero.close();
-           fichero = new FileWriter("C:\\Users\\Jherson Sazo\\Documents\\COMPI2\\BASES\\"+base.nombre +"\\objetos.usac");
-           fichero.write("");
-           fichero.close();//actualizamos la base de datos
-           
        } catch (IOException ex) {
            Logger.getLogger(Control.class.getName()).log(Level.SEVERE, null, ex);
        }

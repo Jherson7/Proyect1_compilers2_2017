@@ -1,6 +1,7 @@
 options {
 //LOOKAHEAD=1;
 STATIC = false;
+IGNORE_CASE=true;
 } 
 
 PARSER_BEGIN(registro_proc)
@@ -44,6 +45,10 @@ TOKEN:
 {
  <Procedure: "<Proc>">
 |<C_Proc: "</Proc>">
+|<FUNC: "<Func>">
+|<C_FUNC: "</Func>">
+|<RET :"<return>">
+|<C_RET :"</return>">
 |<Src: "<src>">
 |<C_Scr: "</src>">
 |<Param: "<params>">
@@ -54,16 +59,20 @@ TOKEN:
 |<C_Tabla: "</Tabla>">
 |<Rows: "<rows>">
 |<C_Rows: "</rows>">
-|<INT: "<int>">
+|<INT: "<integer>">
 |<BOOL: "<bool>">
 |<TEXT: "<text>">
-|<C_INT: "</int>">
+|<C_INT: "</integer>">
 |<C_BOOL: "</bool>">
 |<C_TEXT: "</text>">
 |<NOMBRE: "<nombre>">
 |<C_NOMBRE: "</nombre>">
 |<PATH: "<path>">
 |<C_PATH: "</path>">
+| < DATE: "<DATE>">
+| < DATETIME: "<DATETIME>">
+| < C_DATE: "</DATE>">
+| < C_DATETIME: "</DATETIME>">
 
 }
 
@@ -73,15 +82,16 @@ TOKEN :
   < NUM: <DECIMAL_LITERAL >>
 | < #DECIMAL_LITERAL: ["0"-"9"] (["0"-"9"])*(["."](["0"-"9"])*)? >
 | < IDEN: ["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
-| < CADENA: (~["\"","\n","\t"," "])+ >
+|< CADENA: "'" (~["\"","\n","\t","<",">"])+ "'" >
+//tengo que arreglar el string para acepte lo que sea
 }
 
 
 Nodo Inicio():
-{Nodo raiz,sent;}
+{Nodo raiz,r;}
 { 
    {raiz= new Nodo("registro_proc",0,0);}
-   (r=Procedure()  {raiz.hijos.addLast(r);})+
+   (r=Procedure()  {raiz.hijos.addLast(r);} |r=Funcion()  {raiz.hijos.addLast(r);} )*
    <EOF>
    {return raiz;}
   
@@ -93,25 +103,50 @@ Nodo Procedure():
 {
  {param=new Nodo("PARAMETROS",0,0);}
  <Procedure> 
- 	<NOMBRE> a=<CADENA> <C_NOMBRE>
+ 	<NOMBRE> a=<IDEN> <C_NOMBRE>
+  {raiz = new Nodo("PROC",a.beginLine,a.beginColumn,a.image);}
  	<Param>
- 		(r=Atributo() {param.hijos.addLast(r);})+
+ 		(r=Atributo() {param.hijos.addLast(r);})*
  	<C_Param>
- 	<Src>b=<CADENA><C_Scr>
+ 	(<Src>b=<CADENA><C_Scr> {raiz.hijos.addLast(new Nodo(b.image,b.beginLine,b.beginColumn));}) ?
  <C_Proc>
 
- {raiz = new Nodo("PROC",a.beginLine,a.beginColumn,b.image);
-  raiz.hijos.addLast(param);
+ {raiz.hijos.addLast(param);
   return raiz;}
 }
+
+
+Nodo Funcion():
+{Nodo raiz,param,r;Token a,b;}
+{
+ {param=new Nodo("PARAMETROS",0,0);}
+ <FUNC> 
+  <NOMBRE> a=<IDEN> <C_NOMBRE>
+  <RET> b=<IDEN> <C_RET>
+  {raiz = new Nodo("FUNC",a.beginLine,a.beginColumn,a.image,b.image);}
+
+  <Param>
+    (r=Atributo() {param.hijos.addLast(r);})*
+  <C_Param>
+  (<Src>b=<CADENA><C_Scr> {raiz.hijos.addLast(new Nodo(b.image,b.beginLine,b.beginColumn));}) ?
+ <C_FUNC>
+
+ {raiz.hijos.addLast(param);
+  return raiz;}
+}
+
+
+
+
 
 Nodo Atributo():
 {Nodo raiz;Token a,b;}
 {
-  a=<INT>b=<IDEN><C_INT>
- |a=<BOOL>b=<IDEN><C_BOOL>
- |a=<TEXT>b=<IDEN><C_TEXT>
-
- {raiz = new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);
-  return raiz;}
+  a=<INT>b=<IDEN><C_INT>            {return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
+ |a=<BOOL>b=<IDEN><C_BOOL>          {return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
+ |a=<TEXT>b=<IDEN><C_TEXT>          {return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
+ |a=<DATE>b=<IDEN><C_DATE>          {return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
+ |a=<DATETIME>b=<IDEN><C_DATETIME>  {return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
+ |"<" a=<IDEN> ">"b=<IDEN> "<" "/" <IDEN> ">" {return new Nodo("ATRIBUTO",a.beginLine,a.beginColumn,a.image,b.image);}
+ //me falta el ide
 }

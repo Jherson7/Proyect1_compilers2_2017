@@ -3,6 +3,8 @@ package levantarBD;
 import ArbolAST.Control;
 import ArbolAST.Nodo;
 import ArbolAST.ejecutor;
+import base_datos.Atributos_Obj;
+import base_datos.Objetos;
 import base_datos.atributos;
 import base_datos.bd;
 import base_datos.nodo_tabla;
@@ -263,7 +265,16 @@ public class levantarBase {
         String nombre=raiz.hijos.get(0).nombre;
         
         //ciclo for para agarrar los objetos
-        
+        Objetos obj = new Objetos(nombre);
+        for(Nodo r:raiz.hijos.get(1).hijos){
+            String tipo = r.hijos.get(0).nombre.replaceAll("<", "").replace(">", "");
+            String atr_nombre = r.hijos.get(1).nombre;
+            if(!obj.atributos.containsKey(atr_nombre)){
+                Atributos_Obj atr = new Atributos_Obj(tipo, atr_nombre);
+                obj.atributos.put(atr_nombre, atr);
+            }
+        }
+        base.Objetos.put(nombre, obj);
     }
     
 }

@@ -131,6 +131,7 @@ atr.hijos.addLast(sent);
 atr.hijos.addLast(sent);
         }
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+        case NULO:
         case BOOL:
         case CHAR:
         case INTEGER:
@@ -139,7 +140,8 @@ atr.hijos.addLast(sent);
         case VACIO:
         case DATE:
         case DATETIME:
-        case IDEN:{
+        case IDEN:
+        case CARACTER:{
           ;
           break;
           }
@@ -212,7 +214,8 @@ raiz= new Nodo("ATRIBUTO_TABLA",t.beginLine,t.beginColumn,tipo,t.image);
       case AUTO_INCREMENT:
       case FK:
       case NOT_NULL:
-      case NULO:{
+      case NULO:
+      case UNICO:{
         ;
         break;
         }
@@ -257,6 +260,11 @@ raiz.hijos.addLast(features);
 {if ("" != null) return new Nodo("NULL",v.beginLine,v.beginColumn,v.image);}
       break;
       }
+    case UNICO:{
+      v = jj_consume_token(UNICO);
+{if ("" != null) return new Nodo("UNICO",v.beginLine,v.beginColumn,v.image);}
+      break;
+      }
     default:
       jj_la1[7] = jj_gen;
       jj_consume_token(-1);
@@ -272,6 +280,7 @@ sentencias= new Nodo("SENTENCIAS",0,0);
 raiz=new Nodo("PROCEDIMIENTO",t.beginLine,t.beginColumn,t.image);
     jj_consume_token(apar);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case NULO:
     case BOOL:
     case CHAR:
     case INTEGER:
@@ -280,7 +289,8 @@ raiz=new Nodo("PROCEDIMIENTO",t.beginLine,t.beginColumn,t.image);
     case VACIO:
     case DATE:
     case DATETIME:
-    case IDEN:{
+    case IDEN:
+    case CARACTER:{
       p = Parametros();
 parametros.hijos.addLast(p);
       label_6:
@@ -352,6 +362,7 @@ sentencias= new Nodo("SENTENCIAS",0,0);
 raiz=new Nodo("FUNCION",t.beginLine,t.beginColumn,t.image);
     jj_consume_token(apar);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case NULO:
     case BOOL:
     case CHAR:
     case INTEGER:
@@ -360,7 +371,8 @@ raiz=new Nodo("FUNCION",t.beginLine,t.beginColumn,t.image);
     case VACIO:
     case DATE:
     case DATETIME:
-    case IDEN:{
+    case IDEN:
+    case CARACTER:{
       p = Parametros();
 parametros.hijos.addLast(p);
       label_8:
@@ -626,10 +638,10 @@ raiz= new Nodo("RESTORE_COMPLETO",a.beginLine,a.beginColumn,a.image,b.image); {i
   final public Nodo Contar() throws ParseException {Nodo raiz,r;Token v;
     v = jj_consume_token(CONTAR);
     jj_consume_token(apar);
-    jj_consume_token(107);
+    jj_consume_token(108);
     jj_consume_token(SELECCIONAR);
     r = Sentencias_Seleccionar();
-    jj_consume_token(108);
+    jj_consume_token(109);
     jj_consume_token(cpar);
 raiz = new Nodo("CONTAR",v.beginLine,v.beginColumn);
          raiz.hijos.addLast(r);
@@ -1804,48 +1816,47 @@ dos = raiz; raiz=new Nodo("EXP",token.beginLine,token.beginColumn); raiz.hijos.a
     case key:{
       jj_consume_token(key);
       t = jj_consume_token(IDEN);
-r=new Nodo("ID",t.beginLine,t.beginColumn,t.image);
+{if ("" != null) return new Nodo("ID",t.beginLine,t.beginColumn,t.image);}
       break;
       }
     case IDEN:{
       t = jj_consume_token(IDEN);
-r=new Nodo("ID_ATR",t.beginLine,t.beginColumn,t.image);
+{if ("" != null) return new Nodo("ID_ATR",t.beginLine,t.beginColumn,t.image);}
       break;
       }
     case NUM:{
       t = jj_consume_token(NUM);
-r=new Nodo("NUM",t.beginLine,t.beginColumn,t.image);
+{if ("" != null) return new Nodo("NUM",t.beginLine,t.beginColumn,t.image);}
       break;
       }
     case FALSE:{
       t = jj_consume_token(FALSE);
-r=new Nodo("FALSE",t.beginLine,t.beginColumn,t.image);
+{if ("" != null) return new Nodo("FALSE",t.beginLine,t.beginColumn,t.image);}
       break;
       }
     case TRUE:{
       t = jj_consume_token(TRUE);
-r=new Nodo("TRUE",t.beginLine,t.beginColumn,t.image);
+{if ("" != null) return new Nodo("TRUE",t.beginLine,t.beginColumn,t.image);}
       break;
       }
     case CARACTER:{
       t = jj_consume_token(CARACTER);
-r=new Nodo("CHAR",t.beginLine,t.beginColumn,t.image);
+{if ("" != null) return new Nodo("CHAR",t.beginLine,t.beginColumn,t.image);}
       break;
       }
     case CADENA:{
       t = jj_consume_token(CADENA);
-r=new Nodo("STRING",t.beginLine,t.beginColumn,t.image);
+{if ("" != null) return new Nodo("STRING",t.beginLine,t.beginColumn,t.image);}
       break;
       }
     case DATE_EXP:{
       t = jj_consume_token(DATE_EXP);
-r=new Nodo("DATE",t.beginLine,t.beginColumn,t.image);
+{if ("" != null) return new Nodo("DATE",t.beginLine,t.beginColumn,t.image);}
       break;
       }
     case DATE_TIME_EXP:{
       t = jj_consume_token(DATE_TIME_EXP);
-r=new Nodo("DATE TIME",t.beginLine,t.beginColumn,t.image);
-{if ("" != null) return r;}
+{if ("" != null) return new Nodo("DATE TIME",t.beginLine,t.beginColumn,t.image);}
       break;
       }
     default:
@@ -1878,6 +1889,11 @@ r=new Nodo("DATE TIME",t.beginLine,t.beginColumn,t.image);
 {if ("" != null) return new Nodo("TEXT",token.beginLine,token.beginColumn);}
       break;
       }
+    case CARACTER:{
+      jj_consume_token(CARACTER);
+{if ("" != null) return new Nodo("TEXT",token.beginLine,token.beginColumn);}
+      break;
+      }
     case DOUBLE:{
       jj_consume_token(DOUBLE);
 {if ("" != null) return new Nodo("DOUBLE",token.beginLine,token.beginColumn);}
@@ -1901,6 +1917,11 @@ r=new Nodo("DATE TIME",t.beginLine,t.beginColumn,t.image);
     case IDEN:{
       jj_consume_token(IDEN);
 {if ("" != null) return new Nodo("ID",token.beginLine,token.beginColumn,token.image);}
+      break;
+      }
+    case NULO:{
+      jj_consume_token(NULO);
+{if ("" != null) return new Nodo("NULO",token.beginLine,token.beginColumn,token.image);}
       break;
       }
     default:
@@ -1938,10 +1959,10 @@ r=new Nodo("DATE TIME",t.beginLine,t.beginColumn,t.image);
       jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x20,0x0,0x0,0x0,0x0,0x0,0x187e6780,0x0,0x0,0x187e6780,0x187e6780,0x18000,0x18000,0x0,0x0,0x0,0x40000000,0x0,0x0,0x40000000,0x0,0x40000000,0x0,0x0,0x80000000,0x0,0x0,0x40000000,0x20,0x0,0x0,0x6000000,0x0,0x0,0x6000000,0x20,0x0,0x0,0x187e6780,0x187e6780,0x10,0x40,0x187e6780,0x187e6780,0x187e6780,0x187e6780,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_2() {
-      jj_la1_2 = new int[] {0x102,0x102,0x0,0x1fe00000,0xf4,0x0,0x3e00,0x3e00,0x0,0x1fe00000,0x20009,0x0,0x1fe00000,0x20009,0x20009,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x84,0x0,0x0,0x0,0x0,0x0,0x0,0xc4,0xa0000000,0x0,0x20009,0x20009,0x0,0x0,0x20009,0x20009,0x20009,0x20009,0x0,0x0,0x0,0x0,0xa0000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xa0000000,0x1fe00000,};
+      jj_la1_2 = new int[] {0x102,0x102,0x0,0x3fc02000,0xf4,0x0,0x203e00,0x203e00,0x0,0x3fc02000,0x20009,0x0,0x3fc02000,0x20009,0x20009,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x84,0x0,0x0,0x0,0x0,0x0,0x0,0xc4,0x40000000,0x0,0x20009,0x20009,0x0,0x0,0x20009,0x20009,0x20009,0x20009,0x0,0x0,0x0,0x0,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000000,0x3fc02000,};
    }
    private static void jj_la1_init_3() {
-      jj_la1_3 = new int[] {0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x0,0x0,0x2,0x2,0x0,0x2,0x2,0x2,0x0,0x0,0x2,0x2,0x0,0x0,0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x237,0x0,0x2,0x2,0x0,0x0,0x2,0x2,0x2,0x2,0x0,0x0,0x0,0x0,0x237,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x237,0x2,};
+      jj_la1_3 = new int[] {0x0,0x0,0x0,0xc,0x0,0x0,0x0,0x0,0x0,0xc,0x4,0x0,0xc,0x4,0x4,0x0,0x0,0x4,0x4,0x0,0x0,0x0,0x0,0x0,0x4,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x46f,0x0,0x4,0x4,0x0,0x0,0x4,0x4,0x4,0x4,0x0,0x0,0x0,0x0,0x46f,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x46f,0xc,};
    }
 
   /** Constructor with InputStream. */
@@ -2058,7 +2079,7 @@ r=new Nodo("DATE TIME",t.beginLine,t.beginColumn,t.image);
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[109];
+    boolean[] la1tokens = new boolean[110];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -2081,7 +2102,7 @@ r=new Nodo("DATE TIME",t.beginLine,t.beginColumn,t.image);
         }
       }
     }
-    for (int i = 0; i < 109; i++) {
+    for (int i = 0; i < 110; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

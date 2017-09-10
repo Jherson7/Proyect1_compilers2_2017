@@ -105,7 +105,7 @@ public class ejecutor {
                 }
                 if (fl) {
                     actual.tablas.put(nombre, tl);//comprobar que no exista la tabla
-                    leerTabla(tl);//vamos a escribir el archivo
+                    //leerTabla(tl);//vamos a escribir el archivo
                 }
             }else
                 Control.agregarError(new errores("SEMANTICO", "Ya existe la tabla: "+nombre, raiz.fila, raiz.columna));

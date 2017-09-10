@@ -11,8 +11,6 @@ import ArbolAST.ejecutor;
 import gramatica.ParseException;
 import gramatica.Sintactico;
 import java.io.StringReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -27,7 +25,7 @@ public class Principal extends javax.swing.JFrame {
     public Principal() {
         initComponents();
         Control.iniciar();
-        Control.levante=false;
+        //Control.levante=false;
     }
 
     /**
