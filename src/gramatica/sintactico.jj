@@ -173,8 +173,7 @@ TOKEN :
 | <FALSE: "falso">
 | <TRUE: "verdadero">
 | < IDEN: ["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
-| <CARACTER: <VAL_CARAC> >
-| < #VAL_CARAC: "'" (("^"["n","t","r","^","'","\""])|(~["\\","\n","\t","\r","'"]))+"'"  >
+
 | <CADENA: "\""(~["\"","\n","\t"])* "\"">
 | <DATE_EXP: "'" <DIA>["-"] <MES> ["-"] <ANIO> "'">
 | <#DIA: ((["0"])?["1"-"9"]|["1"-"3"]["0"-"9"])>
@@ -182,6 +181,8 @@ TOKEN :
 | <#ANIO:  (["0"-"9"])+>
 | <DATE_TIME_EXP: "'" <DIA>["-"] <MES> ["-"] <ANIO> " " <HOUR> "'">
 | <#HOUR: (((["0"])?["0"-"9"]|["1"-"2"]["0"-"9"])":"(["0"-"6"]["0"-"9"])":"(["0"-"6"]["0"-"9"]))>
+| <CARACTER: <VAL_CARAC> >
+| < #VAL_CARAC: "'" (("^"["n","t","r","^","'","\""])|(~["\\","\n","\t","\r","'"]))+"'"  >
 }
 
 
@@ -439,10 +440,17 @@ Nodo Sentencias_Seleccionar():
      {raiz = new Nodo("SELECCIONAR",0,0);}
      {l_campos = new Nodo("lista_campos",0,0);}
      {l_tablas = new Nodo("lista_tablas",0,0);}
+
      v=<IDEN> {l_campos.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));}
+
      (<coma> v=<IDEN>{l_campos.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));})* 
+
      <DE> v=<IDEN> {l_tablas.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));}
+
      (<coma> v=<IDEN>{l_tablas.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));})* 
+
+     {raiz.hijos.addLast(l_campos); raiz.hijos.addLast(l_tablas);}
+
      (<DONDE> r=Rel_Or(){raiz.hijos.addLast(r);})?
     
     {return raiz;}

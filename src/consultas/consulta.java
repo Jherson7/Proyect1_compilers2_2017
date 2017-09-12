@@ -1,5 +1,6 @@
 package consultas;
 
+import ArbolAST.Nodo;
 import base_datos.atributos;
 import base_datos.nodo_tabla;
 import base_datos.registro_tabla;
@@ -17,15 +18,26 @@ public class consulta {
     public consulta() {
     }
     
-    public static void productoCartesiano(LinkedList<tabla> tablas){
+    public static  LinkedList<registro_tabla> productoCartesiano(LinkedList<tabla> tablas){
        LinkedList<registro_tabla> lista = new LinkedList<>();
        LinkedList<registro_tabla> ultima = new LinkedList<>();
        int cont =1;
-       //probar(tablas,tablas.getFirst().registros,ultima,cont);
-         
-       //LinkedList<LinkedList<registro_tabla>> lista = new LinkedList<>();
-       prueba3(tablas, lista, ultima, cont, tablas.getFirst().registros);
        
+       //
+       lista=(LinkedList)tablas.getFirst().registros.clone();
+       if(tablas.size()>1){
+         prueba3(tablas, lista, ultima, cont, tablas.getFirst().registros);
+         
+       }
+       else
+           ultima=tablas.getFirst().registros;
+        int a=0;
+        for(registro_tabla t:ultima){
+            for(nodo_tabla d: t.registro)
+                System.out.print("| "+d.valor);
+            System.out.println("| "+a);a++;
+        } 
+       return ultima;
       
     }
     
@@ -67,45 +79,6 @@ public class consulta {
         }
     }
     
-    
-    
-    private static void probar(LinkedList<tabla> tablas, LinkedList<registro_tabla> lista,
-            LinkedList<registro_tabla> ultima,int cont){
-    
-        if(cont+1==tablas.size()){
-            //estamos en la ultima tabla
-            for(registro_tabla x:tablas.getLast().registros){
-                
-                for(registro_tabla y: lista){
-                    //ultima . add(x+y)
-                    //crear z
-                    registro_tabla z = new registro_tabla();
-                    
-                    z.registro= (LinkedList) y.registro.clone();
-                    for(nodo_tabla w : x.registro){
-                        z.registro.addLast(w);
-                    }
-                    ultima.addLast(z);
-                }
-                
-            }
-        }else{
-            for( ; cont<tablas.size()-1; cont++){
-                
-                
-            }
-            
-        }
-        
-        for(registro_tabla t:ultima){
-            for(nodo_tabla d: t.registro)
-                System.out.print("| "+d.valor);
-            System.out.println("|");
-        }
-    
-    }
-        
-        
     private static void prueba3(LinkedList<tabla> tablas, LinkedList<registro_tabla> lista,
             LinkedList<registro_tabla> ultima,int cont,LinkedList<registro_tabla> anterior){
     
@@ -148,16 +121,37 @@ public class consulta {
                     prueba3(tablas, lista_x, ultima, cont+1, v.registros);
                 }
             }
+        }
+    }
+    
+    public static  LinkedList<registro_tabla> retornarConCampos(LinkedList<registro_tabla>lista,Nodo atributos){
+        
+        LinkedList<String> cabeceras=new LinkedList<>();
+        for(Nodo h:atributos.hijos){
+            cabeceras.add(h.nombre);
+        }
+        
+        LinkedList<registro_tabla> result = new LinkedList<>();
+        
+        int a=0;
+        for(registro_tabla x:lista){
+            a=0;
+            registro_tabla aux = new registro_tabla();
+            
+            for(String c:cabeceras){
+               for(nodo_tabla y:x.registro){
+                if(y.tipo.equals(cabeceras.get(a)))
+                    { aux.registro.addLast(y);break;}
+                
+                } 
+               a++;
+            }
+            result.add(aux);
             
         }
         
-        int a=0;
-        for(registro_tabla t:ultima){
-            for(nodo_tabla d: t.registro)
-                System.out.print("| "+d.valor);
-            System.out.println("| "+a);a++;
-        }
-    
+        return result;
     }
+    
     
 }

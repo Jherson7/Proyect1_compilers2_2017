@@ -21,6 +21,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,11 +34,25 @@ public class ejecutor {
  
     public bd actual=null;
     public usuario user=null;
+    public HashMap<String,variable> lista_actual;
+    public LinkedList< HashMap<String,variable>> ambito;
     
     public ejecutor() {
+        ambito = new LinkedList<>();
         Control.iniciar();
+        aumentarAmbito();//ambito global
     }
     
+    public void aumentarAmbito(){
+        
+        ambito.addFirst(new HashMap<>());
+        lista_actual=ambito.getFirst();
+    }
+    
+    public void disminuirAmbito(){
+        ambito.removeFirst();
+        lista_actual=ambito.getFirst();
+    }
     
     public  void recorrer(Nodo raiz){
         
@@ -70,7 +85,6 @@ public class ejecutor {
                 break;
         }
     }
-    
     
     public void usarBD(Nodo raiz){
         String nombre = raiz.hijos.get(0).nombre;
@@ -521,49 +535,6 @@ public class ejecutor {
          return true;
      }
 
-    private Object castear(String tipo,Object valor){
-        switch(tipo){
-            case "DATE" :
-                try {
-                DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                Date date = format.parse(String.valueOf(valor)); 
-                    return date;
-                } catch (ParseException e) {
-                    System.out.println("No es de tipo date"+ e.getMessage());
-                    return null;
-                }
-            case "DATETIME":
-                try {
-                DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date date = format.parse(String.valueOf(valor)); 
-                    return date;
-                } catch (ParseException e) {
-                    System.out.println("No es de tipo date"+ e.getMessage());
-                    return null;
-                }
-                
-                
-            case "TEXT":
-                return String.valueOf(valor);
-            case "INTEGER":
-                try {
-                     Double tmp=Double.parseDouble(valor.toString());
-                     return tmp.intValue();
-                } catch (NumberFormatException e) {
-                    System.out.println("No se puede convertir a integer"+ e.getMessage());
-                    return null;
-                }
-                case "DOUBLE":
-                try {
-                     return Double.parseDouble(String.valueOf(valor));
-                } catch (NumberFormatException e) {
-                    System.out.println("No se puede convertir a double"+ e.getMessage());
-                    return null;
-                }
-                
-        }
-        return null;
-    }
     
     //vamos a levantar el nodo EXP
     private Object evaluarEXPRESION(Nodo nodo)
@@ -574,18 +545,19 @@ public class ejecutor {
                 String operador = nodo.hijos.get(1).nombre;
                 switch (operador)
                 {
-                    /*case "||":  return evaluarOR(nodo.hijos.get(0), nodo.hijos.get(2));
+                    case "||":  return evaluarOR(nodo.hijos.get(0), nodo.hijos.get(2));
                     case "&&":  return evaluarAND(nodo.hijos.get(0), nodo.hijos.get(2));
                     case "==":  return evaluarIGUAL(nodo.hijos.get(0), nodo.hijos.get(2));
                     case "!=":  return evaluarDIFERENTE(nodo.hijos.get(0), nodo.hijos.get(2));
                     case ">=":  return evaluarMAYORIGUAL(nodo.hijos.get(0), nodo.hijos.get(2));
                     case ">":   return evaluarMAYOR(nodo.hijos.get(0), nodo.hijos.get(2));
                     case "<=":  return evaluarMENORIGUAL(nodo.hijos.get(0), nodo.hijos.get(2));
-                    case "<":   return evaluarMENOR(nodo.hijos.get(0), nodo.hijos.get(2));*/
+                    case "<":   return evaluarMENOR(nodo.hijos.get(0), nodo.hijos.get(2));
                     case "+":   return evaluarMAS(nodo.hijos.get(0), nodo.hijos.get(2));
                     case "-":   return evaluarMENOS(nodo.hijos.get(0), nodo.hijos.get(2));
                     case "*":   return evaluarPOR(nodo.hijos.get(0), nodo.hijos.get(2));
                     case "/":   return evaluarDIVIDIR(nodo.hijos.get(0), nodo.hijos.get(2));
+                    case "^":   return evaluarPOTENCIA(nodo.hijos.get(0), nodo.hijos.get(2));
                     default:    break;
                 }
             }
@@ -606,14 +578,13 @@ public class ejecutor {
             //---------------------> Si tiene 1 hijo
             if (nodo.hijos.size()==1)
             {
-                
                 String termino = nodo.nombre;
                 switch (termino)
                 {
-
                     //case "EXP":     return evaluarEXPRESION(nodo.hijos.get(0));
-                    //case "id":      return evaluarID(nodo.hijos.get(0));
-                    //case "NOT":
+                    case "id":      return evaluarID(nodo.hijos.get(0));
+                    case "ID_ATR":  return evaluarID(nodo.hijos.get(0));
+                    case "NOT":     return evaluarNOT(nodo.hijos.get(0));
                     case "NUM":     return evaluarNUMERO(nodo.hijos.get(0));
                     case "TEXT":    return nodo.hijos.get(0).nombre.replaceAll("\"", "").replaceAll("'","");
                     //case "CALL_FUN": return evaluarEXPRESION(nodo.hijos.get(0));
@@ -633,20 +604,238 @@ public class ejecutor {
                // return Integer.parseInt(val.nombre);
     }
 
-    private Object evaluarMAS(Nodo get, Nodo get0) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private Object evaluarMAS(Nodo izq, Nodo der) {
+        Object uno = evaluarEXPRESION(izq);
+        Object dos = evaluarEXPRESION(der); 
+        
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        if(val1==-1 || val2==-1){
+            Control.agregarError(new errores("SEMANTICO","No se pueden sumar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+            return null;
+        }
+        if(val1==1 || val2==1){
+            return (String)uno + (String)dos;
+        }else if( val1==4 || val2==4){
+            Control.agregarError(new errores("SEMANTICO","No se pueden sumar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+            return null;
+        }
+        else if( val1==2 || val2==2){
+            try {
+                Double x = (Double)castear("double", uno);
+                Double y = (Double)castear("double", dos);
+                return x+y;
+            } catch (Exception e) {
+                Control.agregarError(new errores("SEMANTICO","No se pueden sumar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            }
+        }
+        else if( val1==3 || val2==3){
+            try {
+                int x = (int)castear("integer", uno);
+                int y = (int)castear("integer", dos);
+                return x+y;
+            } catch (Exception e) {
+                Control.agregarError(new errores("SEMANTICO","No se pueden sumar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            }
+        }
+        else{
+            try {
+                return (boolean)uno || (boolean)dos;
+            } catch (Exception e) {
+                Control.agregarError(new errores("SEMANTICO","No se pueden sumar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            }
+        }
     }
 
-    private Object evaluarMENOS(Nodo get, Nodo get0) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private Object evaluarMENOS(Nodo izq, Nodo der) {
+        Object uno = evaluarEXPRESION(izq);
+        Object dos = evaluarEXPRESION(der); 
+        
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        if(val1==-1 || val2==-1){
+            Control.agregarError(new errores("SEMANTICO","No se pueden restar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+            return null;
+        }
+        if(val1==1 || val2==1){
+            return (String)uno + (String)dos;
+        }else if( val1==4 || val2==4){
+            Control.agregarError(new errores("SEMANTICO","No se pueden restar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+            return null;
+        }
+        else if( val1==2 || val2==2){
+            try {
+                Double x = (Double)castear("double", uno);
+                Double y = (Double)castear("double", dos);
+                return x-y;
+            } catch (Exception e) {
+                Control.agregarError(new errores("SEMANTICO","No se pueden restar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            }
+        }
+        else if( val1==3 || val2==3){
+            try {
+                int x = (int)castear("integer", uno);
+                int y = (int)castear("integer", dos);
+                return x+y;
+            } catch (Exception e) {
+                Control.agregarError(new errores("SEMANTICO","No se pueden restar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            }
+        }
+        else{
+                Control.agregarError(new errores("SEMANTICO","No se pueden restar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            
+        }
     }
 
-    private Object evaluarPOR(Nodo get, Nodo get0) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private Object evaluarPOR(Nodo izq, Nodo der) {
+        Object uno = evaluarEXPRESION(izq);
+        Object dos = evaluarEXPRESION(der); 
+        
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        if(val1==-1 || val2==-1){
+            Control.agregarError(new errores("SEMANTICO","No se pueden multiplicar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+            return null;
+        }
+        if(val1==1 || val2==1){
+            if(val1==4 || val2==4)
+                return (String)uno + (String)dos;
+            else{
+              Control.agregarError(new errores("SEMANTICO","No se pueden multiplicar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+              return null;  
+            }
+        }else if( val1==4 || val2==4){
+            Control.agregarError(new errores("SEMANTICO","No se pueden multiplicar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+            return null;
+        }
+        else if( val1==2 || val2==2){
+            try {
+                Double x = (Double)castear("double", uno);
+                Double y = (Double)castear("double", dos);
+                return x*y;
+            } catch (Exception e) {
+                Control.agregarError(new errores("SEMANTICO","No se pueden multiplicar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            }
+        }
+        else if( val1==3 || val2==3){
+            try {
+                int x = (int)castear("integer", uno);
+                int y = (int)castear("integer", dos);
+                return x*y;
+            } catch (Exception e) {
+                Control.agregarError(new errores("SEMANTICO","No se pueden multiplicar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            }
+        }
+        else{
+            try {
+                return (boolean)uno && (boolean)dos;
+            } catch (Exception e) {
+                Control.agregarError(new errores("SEMANTICO","No se pueden multiplicar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            }
+        }
     }
 
-    private Object evaluarDIVIDIR(Nodo get, Nodo get0) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private Object evaluarDIVIDIR(Nodo izq, Nodo der) {
+        Object uno = evaluarEXPRESION(izq);
+        Object dos = evaluarEXPRESION(der); 
+        
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        if(val1==-1 || val2==-1){
+            Control.agregarError(new errores("SEMANTICO","No se pueden dividir los tipos: "+uno+","+dos,izq.fila,izq.columna));
+            return null;
+        }
+        if(val1==1 || val2==1){
+            if(val1==4 || val2==4)
+                return (String)uno + (String)dos;
+            else{
+              Control.agregarError(new errores("SEMANTICO","No se pueden dividir los tipos: "+uno+","+dos,izq.fila,izq.columna));
+              return null;  
+            }
+        }else if( val1==4 || val2==4){
+            Control.agregarError(new errores("SEMANTICO","No se pueden dividir los tipos: "+uno+","+dos,izq.fila,izq.columna));
+            return null;
+        }
+        else if( val1==2 || val2==2){
+            try {
+                Double x = (Double)castear("double", uno);
+                Double y = (Double)castear("double", dos);
+                return x*y;
+            } catch (Exception e) {
+                Control.agregarError(new errores("SEMANTICO","No se pueden dividir los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            }
+        }
+        else if( val1==3 || val2==3){
+            try {
+                int x = (int)castear("integer", uno);
+                int y = (int)castear("integer", dos);
+                return x*y;
+            } catch (Exception e) {
+                Control.agregarError(new errores("SEMANTICO","No se pueden dividir los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            }
+        }
+        else{
+                Control.agregarError(new errores("SEMANTICO","No se pueden dividir los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+        }
+    }
+
+    private Object evaluarPOTENCIA(Nodo izq, Nodo der) {
+        Object uno = evaluarEXPRESION(izq);
+        Object dos = evaluarEXPRESION(der); 
+        
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        if(val1==-1 || val2==-1){
+            Control.agregarError(new errores("SEMANTICO","No se pueden potenciar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+            return null;
+        }
+        if(val1==1 || val2==1){
+            if(val1==4 || val2==4)
+                return (String)uno + (String)dos;
+            else{
+              Control.agregarError(new errores("SEMANTICO","No se pueden potenciar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+              return null;  
+            }
+        }else if( val1==4 || val2==4){
+            Control.agregarError(new errores("SEMANTICO","No se pueden potenciar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+            return null;
+        }
+        else if( val1==2 || val2==2){
+            try {
+                Double x = (Double)castear("double", uno);
+                Double y = (Double)castear("double", dos);
+                return Math.pow(x, y);
+            } catch (Exception e) {
+                Control.agregarError(new errores("SEMANTICO","No se pueden potenciar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            }
+        }
+        else if( val1==3 || val2==3){
+            try {
+                int x = (int)castear("integer", uno);
+                int y = (int)castear("integer", dos);
+                return Math.pow(x, y);
+            } catch (Exception e) {
+                Control.agregarError(new errores("SEMANTICO","No se pueden potenciar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+            }
+        }
+        else{
+                Control.agregarError(new errores("SEMANTICO","No se pueden potenciar los tipos: "+uno+","+dos,izq.fila,izq.columna));
+                return null;
+        }
     }
 
     
@@ -764,7 +953,7 @@ public class ejecutor {
     private void seleccionarTodo(Nodo raiz) {
         //cargar las tablas que fueron seleccionadas
         Nodo tabla=raiz.hijos.get(0);
-        System.out.println("Sazo");
+        
         LinkedList<tabla>cartesiano = new LinkedList<>();
         for(Nodo t:tabla.hijos){
             if(actual.tablas.containsKey(t.nombre)){
@@ -779,12 +968,348 @@ public class ejecutor {
     }
 
     private void seleccionarEspecial(Nodo raiz) {
+      //tengo los campos que requiero, pero primero debo hacer el cartesiano
+      Nodo atributos=raiz.hijos.get(0);//nodo con los atributos requeridas
+      Nodo tabla=raiz.hijos.get(1);//nodo con las tablas requeridas
+        
+        LinkedList<tabla> cartesiano = new LinkedList<>();
+        for (Nodo t : tabla.hijos) {
+            if (actual.tablas.containsKey(t.nombre)) {
+                tabla aux = actual.tablas.get(t.nombre);
+                cartesiano.addLast(aux);
+            } else {
+                Control.agregarError(new errores("SEMANTICO", "NO existe tabla para realizar el select: " + t.nombre, t.fila, t.columna));
+                return;
+            }
+        }
+        
+        LinkedList<registro_tabla> resultado =consulta.productoCartesiano(cartesiano);
        
+        LinkedList<registro_tabla> auxer = new LinkedList<>();
+        if(raiz.hijos.size()==3){
+            Nodo donde = raiz.hijos.get(2);
+            //debo ejecutar donde
+            //hacer un for por cada registro de la tabla
+            //meter a la tabla de simbolos las variables actuales.....
+            for(registro_tabla x:resultado){
+                //llenar registro de nueva tabla
+                aumentarAmbito();
+                llenarVariables(x);
+                Object res = evaluarEXPRESION(donde);
+                try {
+                    if((boolean)res){
+                        auxer.addLast(x);//se cumplio la condicion :D
+                    }
+                } catch (Exception e) {
+                    System.out.println("La expresion no se puede evaluar: "+e.getMessage());
+                    return;
+                }
+                //vaciar registros de la tabla
+            }
+            //mandar a ejecutar nodo cond
+            disminuirAmbito();
+            resultado=auxer;
+            //sacar las variables actuales
+        }
+        
+        resultado= consulta.retornarConCampos(resultado, atributos);
+        
+        int a=0;
+        for(registro_tabla t:resultado){
+            for(nodo_tabla d: t.registro)
+                System.out.print("| "+d.valor);
+            System.out.println("| "+a);a++;
+        } 
+        
+    }
+    
+    private Object castear(String tipo,Object valor){
+        switch(tipo.toUpperCase()){
+            case "DATE" :
+                try {
+                DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                Date date = format.parse(String.valueOf(valor)); 
+                    return date;
+                } catch (ParseException e) {
+                    System.out.println("No es de tipo date"+ e.getMessage());
+                    return null;
+                }
+            case "DATETIME":
+                try {
+                DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date date = format.parse(String.valueOf(valor)); 
+                    return date;
+                } catch (ParseException e) {
+                    System.out.println("No es de tipo date"+ e.getMessage());
+                    return null;
+                }
+                
+            case "TEXT":
+                return String.valueOf(valor);
+            case "INTEGER":
+                try {
+                     Double tmp=Double.parseDouble(valor.toString());
+                     return tmp.intValue();
+                } catch (NumberFormatException e) {
+                    System.out.println("No se puede convertir a integer"+ e.getMessage());
+                    return null;
+                }
+                case "DOUBLE":
+                try {
+                     return Double.parseDouble(String.valueOf(valor));
+                } catch (NumberFormatException e) {
+                    System.out.println("No se puede convertir a double"+ e.getMessage());
+                    return null;
+                }
+        }
+        return null;
     }
 
-    
-    
-    
+    private void llenarVariables(registro_tabla x) {
+         for(nodo_tabla y : x.registro){
+             variable var = new variable(y.tipo, y.tipo, y.valor);
+             if(!lista_actual.containsKey(y.tipo)){
+                 lista_actual.put(y.tipo, var);
+             }
+         }
     }
+
+    private Object evaluarOR(Nodo izq, Nodo der) {
+           try
+            {
+                boolean val1, val2;
+                val1 = (boolean)(evaluarEXPRESION(izq));
+                val2 = (boolean)(evaluarEXPRESION(der));
+                return val1 || val2;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Error al evaluar OR");
+                return null;
+            }
+    }
+
+    private Object evaluarAND(Nodo izq, Nodo der) {
+        try
+            {
+                boolean val1, val2;
+                val1 = (boolean)(evaluarEXPRESION(izq));
+                val2 = (boolean)(evaluarEXPRESION(der));
+                return val1 || val2;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Error al evaluar and");
+                return null;
+            }
+    }
+
+    private Object evaluarIGUAL(Nodo izq, Nodo der) {
+        Object uno = evaluarEXPRESION(izq);
+        Object dos = evaluarEXPRESION(der);
+        try {
+            return uno.equals(dos);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Object evaluarDIFERENTE(Nodo izq, Nodo der) {
+        Object uno = evaluarEXPRESION(izq);
+        Object dos = evaluarEXPRESION(der);
+        try {
+            return !uno.equals(dos);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Object evaluarID(Nodo izq) {
+        String nombre = izq.nombre;
+        for(HashMap<String,variable> aux:ambito){
+            if(aux.containsKey(nombre))
+            {
+                variable v = aux.get(nombre);
+                return v.valor;
+            }
+        }
+        return null;
+    }
+
+    private Object evaluarNOT(Nodo izq) {
+        try {
+            boolean val1 =(boolean)evaluarEXPRESION(izq);
+            return val1;
+        } catch (Exception e) {
+            System.out.println("Error al evaluar NOT");
+            return null;
+        }
+    }
+
+    private Object evaluarMAYORIGUAL(Nodo izq, Nodo der) {
+        Object uno = (evaluarEXPRESION(izq));
+        Object dos = (evaluarEXPRESION(der));
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        
+        if (val1 == val2) {
+            switch (val1) {
+                case 1:
+                    val1=retornarAssci((String)uno);
+                    val2=retornarAssci((String)dos);
+                    return val1>= val2;
+                case 2:
+                    return (double)uno >= (double)dos;
+                case 3:
+                    return (int)uno >= (int)dos;
+                case 4:
+                    return Date.parse(String.valueOf( uno)) >= Date.parse(String.valueOf( dos));
+                default:
+                    return null;
+            }
+            
+        }else if(val1==2|| val1==3||val2==2|| val2==3){
+            uno = castear("double", uno);
+            dos = castear("double", dos);
+            try {
+                return (double)uno >= (double)dos;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        Control.agregarError(new errores("SEMANTICO", "No se puede comparar >= con los tipos: "+uno+","+dos, izq.fila, der.columna));
+        return null;
+    }
+
+    private Object evaluarMAYOR(Nodo izq, Nodo der) {
+        Object uno = (evaluarEXPRESION(izq));
+        Object dos = (evaluarEXPRESION(der));
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        
+        if (val1 == val2) {
+            switch (val1) {
+                case 1:
+                    val1=retornarAssci((String)uno);
+                    val2=retornarAssci((String)dos);
+                    return val1> val2;
+                case 2:
+                    return (double)uno > (double)dos;
+                case 3:
+                    return (int)uno > (int)dos;
+                case 4:
+                    return Date.parse(String.valueOf( uno)) > Date.parse(String.valueOf( dos));
+                default:
+                    return null;
+            }
+            
+        }else if(val1==2|| val1==3||val2==2|| val2==3){
+            uno = castear("double", uno);
+            dos = castear("double", dos);
+            try {
+                return (double)uno > (double)dos;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        Control.agregarError(new errores("SEMANTICO", "No se puede comparar > con los tipos: "+uno+","+dos, izq.fila, der.columna));
+        return null;
+    }
+    
+    private Object evaluarMENOR(Nodo izq, Nodo der) {
+        Object uno = (evaluarEXPRESION(izq));
+        Object dos = (evaluarEXPRESION(der));
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        
+        if (val1 == val2) {
+            switch (val1) {
+                case 1:
+                    val1=retornarAssci((String)uno);
+                    val2=retornarAssci((String)dos);
+                    return val1< val2;
+                case 2:
+                    return (double)uno < (double)dos;
+                case 3:
+                    return (int)uno < (int)dos;
+                case 4:
+                    return Date.parse(String.valueOf( uno)) >= Date.parse(String.valueOf( dos));
+                default:
+                    return null;
+            }
+            
+        }else if(val1==2|| val1==3||val2==2|| val2==3){
+            uno = castear("double", uno);
+            dos = castear("double", dos);
+            try {
+                return (double)uno < (double)dos;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        Control.agregarError(new errores("SEMANTICO", "No se puede comparar < con los tipos: "+uno+","+dos, izq.fila, der.columna));
+        return null;
+    }
+    
+    private Object evaluarMENORIGUAL(Nodo izq, Nodo der) {
+         Object uno = (evaluarEXPRESION(izq));
+        Object dos = (evaluarEXPRESION(der));
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        
+        if (val1 == val2) {
+            switch (val1) {
+                case 1:
+                    val1=retornarAssci((String)uno);
+                    val2=retornarAssci((String)dos);
+                    return val1<= val2;
+                case 2:
+                    return (double)uno <= (double)dos;
+                case 3:
+                    return (int)uno <= (int)dos;
+                case 4:
+                    return Date.parse(String.valueOf( uno)) <= Date.parse(String.valueOf( dos));
+                default:
+                    return null;
+            }
+            
+        }else if(val1==2|| val1==3||val2==2|| val2==3){
+            uno = castear("double", uno);
+            dos = castear("double", dos);
+            try {
+                return (double)uno <= (double)dos;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        Control.agregarError(new errores("SEMANTICO", "No se puede comparar <=con los tipos: "+uno+","+dos, izq.fila, der.columna));
+        return null;
+    }
+
+    private int retornarAssci(String cad) {
+        int res =0;
+        for (int x=0;x<cad.length();x++)
+            res+= cad.codePointAt(x);
+        return res;
+    }
+     
+    private int retornarTipo(Object a){
+        if(a instanceof String)
+            return 1;
+        else if (a instanceof Double)
+            return 2;
+        else if (a instanceof Integer)
+            return 3;
+        else if (a instanceof Date)
+            return 4;
+        else if (a instanceof Boolean)
+            return 5;
+        
+        return -1;
+    }
+    
+    
+
+}//fin clase ejecutor
 
 

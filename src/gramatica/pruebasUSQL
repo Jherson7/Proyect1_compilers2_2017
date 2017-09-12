@@ -42,10 +42,9 @@ CREAR PROCEDIMIENTO insertar_inicial (){
 	INSERTAR EN TABLA asignacion (3, 'ASIG3');
 	INSERTAR EN TABLA asignacion (4, 'ASIG4');
 
-	seleccionar * de estudiante, curso,asignacion;
+	seleccionar nombre,apellido de estudiante donde nombre=='Jherson';
 	
 }
-
 
 
 insertar_inicial();
