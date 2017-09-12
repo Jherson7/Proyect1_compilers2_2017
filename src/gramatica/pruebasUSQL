@@ -1,9 +1,3 @@
-
-/*//  | < CADENA: (~["\"","\n","\t"])+ >*/
-C:\Users\Jherson Sazo\Documents\COMPI2\BASES\prueba\
-
-
-
 CREAR BASE_DATOS prueba;
 
 USAR prueba;
@@ -11,19 +5,55 @@ USAR prueba;
 
 CREAR TABLA estudiante(
 		INTEGER carnet LLAVE_PRIMARIA,
-		DOUBLE dpi UNICO,
 		TEXT nombre NO NULO,
-		#T_DIRECCION direccion,
-		DATE fh_nac NO NULO,
-		DATE fh_creacion NO NULO
+		TEXT apellido NO NULO
 	);
 
 	CREAR TABLA curso(
 		INTEGER codigo_curso LLAVE_PRIMARIA,
-		TEXT nombre NO NULO,
-		INTEGER creditos  NO NULO,
-		INTEGER creditos_prerrequisito
+		TEXT nombre NO NULO
 	);
+
+	CREAR TABLA asignacion(
+		INTEGER codigo LLAVE_PRIMARIA,
+		TEXT nombre NO NULO
+
+	);
+
+
+
+
+CREAR PROCEDIMIENTO insertar_inicial (){
+
+	INSERTAR EN TABLA estudiante (201403001, 'Jherson','Sazo');
+	INSERTAR EN TABLA estudiante (201403002, 'Mike','Sazo');
+	INSERTAR EN TABLA estudiante (201403003, 'Jef','Sazo');
+	INSERTAR EN TABLA estudiante (201403004, 'Jhony','Sazo');
+	INSERTAR EN TABLA estudiante (20170203, 'Mackenzie','Sazo');
+
+	INSERTAR EN TABLA curso (1, 'Compi2');
+	INSERTAR EN TABLA curso (2, 'Archivos');
+	INSERTAR EN TABLA curso (3, 'Bases1');
+	INSERTAR EN TABLA curso (4, 'Analisis1');
+	
+
+	INSERTAR EN TABLA asignacion (1, 'ASIG1');
+	INSERTAR EN TABLA asignacion (2, 'ASIG2');
+	INSERTAR EN TABLA asignacion (3, 'ASIG3');
+	INSERTAR EN TABLA asignacion (4, 'ASIG4');
+
+	seleccionar * de estudiante, curso,asignacion;
+	
+}
+
+
+
+insertar_inicial();
+
+
+
+
+
 
 
 CREAR PROCEDIMIENTO insertar_inicial (){
@@ -35,5 +65,3 @@ CREAR PROCEDIMIENTO insertar_inicial (){
 	#este no se debe de insertar
 	INSERTAR EN TABLA estudiante (201403017, 2950130000101,'Repetido - Error', '7 av 1-48 zona 1, Guatemala','1996-11-02','2017-08-17');
 }
-
-insertar_inicial();

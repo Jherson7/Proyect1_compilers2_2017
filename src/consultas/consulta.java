@@ -18,17 +18,15 @@ public class consulta {
     }
     
     public static void productoCartesiano(LinkedList<tabla> tablas){
-        
-        //iterar la primera tabla con todas las siguientes para obtener una tabla resultado
-        //como vamos a manejar los encabezados??
-        LinkedList<registro_tabla> val= retornarCartesiano(tablas);
-        System.out.println("Jherson");
-        for(registro_tabla r:val){
-            for(nodo_tabla n:r.registro)
-                System.out.print("| "+n.valor);
-            System.out.println("|");
-        }
-        
+       LinkedList<registro_tabla> lista = new LinkedList<>();
+       LinkedList<registro_tabla> ultima = new LinkedList<>();
+       int cont =1;
+       //probar(tablas,tablas.getFirst().registros,ultima,cont);
+         
+       //LinkedList<LinkedList<registro_tabla>> lista = new LinkedList<>();
+       prueba3(tablas, lista, ultima, cont, tablas.getFirst().registros);
+       
+      
     }
     
     private static LinkedList<registro_tabla> retornarCartesiano(LinkedList<tabla> tablas){
@@ -70,5 +68,96 @@ public class consulta {
     }
     
     
+    
+    private static void probar(LinkedList<tabla> tablas, LinkedList<registro_tabla> lista,
+            LinkedList<registro_tabla> ultima,int cont){
+    
+        if(cont+1==tablas.size()){
+            //estamos en la ultima tabla
+            for(registro_tabla x:tablas.getLast().registros){
+                
+                for(registro_tabla y: lista){
+                    //ultima . add(x+y)
+                    //crear z
+                    registro_tabla z = new registro_tabla();
+                    
+                    z.registro= (LinkedList) y.registro.clone();
+                    for(nodo_tabla w : x.registro){
+                        z.registro.addLast(w);
+                    }
+                    ultima.addLast(z);
+                }
+                
+            }
+        }else{
+            for( ; cont<tablas.size()-1; cont++){
+                
+                
+            }
+            
+        }
+        
+        for(registro_tabla t:ultima){
+            for(nodo_tabla d: t.registro)
+                System.out.print("| "+d.valor);
+            System.out.println("|");
+        }
+    
+    }
+        
+        
+    private static void prueba3(LinkedList<tabla> tablas, LinkedList<registro_tabla> lista,
+            LinkedList<registro_tabla> ultima,int cont,LinkedList<registro_tabla> anterior){
+    
+        if(cont+1==tablas.size()){
+            //estamos en la ultima tabla
+            for(registro_tabla x:tablas.getLast().registros){
+
+                    for (registro_tabla y : lista) {
+
+                        registro_tabla z = new registro_tabla();
+
+                        z.registro = (LinkedList) y.registro.clone();
+                        for (nodo_tabla w : x.registro) {
+                            z.registro.addLast(w);
+                        }
+                        ultima.addLast(z);
+                    }
+            }
+        }else{
+            for( ; cont<tablas.size()-1; cont++){
+                tabla v= tablas.get(cont);
+                //crear un array de linkedlist de cada tabla "anterior" con la nueva
+                LinkedList<LinkedList<registro_tabla>> lista_aux= new LinkedList<>();
+                
+                for(registro_tabla x: anterior){//ver como jalar la anterior anterio seria v
+                    //tiene que ir la linkedlist de x
+                    LinkedList<registro_tabla> lista_x = new LinkedList<>();
+                    for(registro_tabla y: v.registros){
+                        
+                        registro_tabla z = new registro_tabla();
+
+                        z.registro = (LinkedList) x.registro.clone();
+                        for (nodo_tabla w : y.registro) {
+                            z.registro.addLast(w);
+                        }
+                        lista_x.addLast(z);
+                        
+                    }
+                    //lista_aux.add(lista_x);
+                    prueba3(tablas, lista_x, ultima, cont+1, v.registros);
+                }
+            }
+            
+        }
+        
+        int a=0;
+        for(registro_tabla t:ultima){
+            for(nodo_tabla d: t.registro)
+                System.out.print("| "+d.valor);
+            System.out.println("| "+a);a++;
+        }
+    
+    }
     
 }
