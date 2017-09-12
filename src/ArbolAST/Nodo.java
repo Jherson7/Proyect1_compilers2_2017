@@ -51,6 +51,18 @@ public class Nodo {
         this.hijos.addLast(new Nodo(hijo2,fila,columna));
     }
      
+     
+     //CONSTRUCTOR PARA EXPRESIONES
+     public Nodo(String nombre,Nodo exp1,String op,Nodo exp2) {
+        this.hijos = new LinkedList<>();
+        this.nombre = nombre;
+        this.fila = exp1.fila;
+        this.columna = exp2.fila;
+        this.hijos.addLast(exp1);
+        this.hijos.addLast(new Nodo(op,fila,columna));
+        this.hijos.addLast(exp2);
+    }
+     
     
     
 }

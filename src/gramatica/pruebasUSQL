@@ -1,36 +1,39 @@
 
 /*//  | < CADENA: (~["\"","\n","\t"])+ >*/
+C:\Users\Jherson Sazo\Documents\COMPI2\BASES\prueba\
 
 
 
 CREAR BASE_DATOS prueba;
+
 USAR prueba;
 
 
-crear objeto Empresa (INTEGER codigo, TEXT nombre, TEXT telefono);
+CREAR TABLA estudiante(
+		INTEGER carnet LLAVE_PRIMARIA,
+		DOUBLE dpi UNICO,
+		TEXT nombre NO NULO,
+		#T_DIRECCION direccion,
+		DATE fh_nac NO NULO,
+		DATE fh_creacion NO NULO
+	);
 
-CREAR USUARIO usuario1 COLOCAR password = "holaMundo";
-
-CREAR TABLA Estudiante (
-	INTEGER id Llave_Primaria Autoincrementable, 
-	TEXT Nombre No Nulo,
-	DATE fh_nac No Nulo,
-	BOOL trabaja
-);
+	CREAR TABLA curso(
+		INTEGER codigo_curso LLAVE_PRIMARIA,
+		TEXT nombre NO NULO,
+		INTEGER creditos  NO NULO,
+		INTEGER creditos_prerrequisito
+	);
 
 
-CREAR TABLA Estudiante2 (
-	INTEGER id Llave_Primaria Autoincrementable, 
-	INTEGER curso LLave_Foranea CURSO idCurso
-);
+CREAR PROCEDIMIENTO insertar_inicial (){
 
+	INSERTAR EN TABLA estudiante (201403001, 2950130000101,'alumno 1','1996-01-19','2017-08-17');
+	INSERTAR EN TABLA estudiante (201403002, 2950130001101,'alumno 2','1990-02-07','2017-08-17');
+	INSERTAR EN TABLA estudiante (201403003, 2950130002101,'alumno 3','1994-12-29','2017-08-17');
+	INSERTAR EN TABLA estudiante (201403004, 2950130003101,'Alumno 4','1993-03-02','2017-08-17');
+	#este no se debe de insertar
+	INSERTAR EN TABLA estudiante (201403017, 2950130000101,'Repetido - Error', '7 av 1-48 zona 1, Guatemala','1996-11-02','2017-08-17');
+}
 
-<Tabla>
-<nombre>nombre_tabla1</nombre>
-<path>C:/Documentos/BD/nombre_tabla1.usac</path>
-<rows>
-<int>Nombre_campo1 <crs> </crs></int>
-<text>Nombre_campo2</text>
-<bool>Nombre_campo3</bool>
-</rows>
-</Tabla>
+insertar_inicial();

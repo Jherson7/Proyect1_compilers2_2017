@@ -91,9 +91,9 @@ public class Principal extends javax.swing.JFrame {
                 raiz=ej.Inicio();
                 ejecutor re = new ejecutor();
                 re.recorrer(raiz);
-                System.out.println("Vamo a ver");
+                Control.imprimirErrores();
             } catch (ParseException ex) {
-                JOptionPane.showMessageDialog(this,"ERROR Al parsear","ERROR",0);
+                //JOptionPane.showMessageDialog(this,"ERROR Al parsear","ERROR",0);
                 System.out.println(ex);
             }
         }

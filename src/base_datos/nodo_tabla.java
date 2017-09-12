@@ -8,7 +8,7 @@ package base_datos;
 public class nodo_tabla {
     public String tipo;//tipo para mientras va a ser nombre_atributo
     public Object valor;
-    public boolean pk,fk,auto_inc,nulo;
+    public boolean pk,fk,auto_inc,nulo,unique;
     
     
     public nodo_tabla() {
@@ -17,7 +17,7 @@ public class nodo_tabla {
     public nodo_tabla(String tipo, Object valor) {
         this.tipo = tipo;
         this.valor = valor;
-        this.pk=this.fk=this.auto_inc=this.nulo=false;
+        this.pk=this.fk=this.auto_inc=this.nulo=this.unique=false;
     }
     
     

@@ -174,7 +174,7 @@ TOKEN :
 | <TRUE: "verdadero">
 | < IDEN: ["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
 | <CARACTER: <VAL_CARAC> >
-| < #VAL_CARAC: "'" (("^"["n","t","r","^","'","\""])|(~["\\","\n","\t","\r"]))+"'"  >
+| < #VAL_CARAC: "'" (("^"["n","t","r","^","'","\""])|(~["\\","\n","\t","\r","'"]))+"'"  >
 | <CADENA: "\""(~["\"","\n","\t"])* "\"">
 | <DATE_EXP: "'" <DIA>["-"] <MES> ["-"] <ANIO> "'">
 | <#DIA: ((["0"])?["1"-"9"]|["1"-"3"]["0"-"9"])>
@@ -198,9 +198,10 @@ Nodo Inicio():
 Nodo Sentencias_Padre():
 {Nodo raiz; Token v;}
 {
-   <CREAR>  raiz = Sentencias_Crear()  {return raiz;}
- | <USAR> v=<IDEN> <ptc>  {raiz= new Nodo("USAR",v.beginLine,v.beginColumn,v.image);}
-	{return raiz;}
+   <CREAR>  raiz = Sentencias_Crear()  	{return raiz;}
+ | <USAR> v=<IDEN> <ptc>  				{return new Nodo("USAR",v.beginLine,v.beginColumn,v.image);}
+ |
+  raiz = Llamada_funcion() 		<ptc>	{return raiz;} 
 }
 
 Nodo Sentencias_Crear():
@@ -463,16 +464,22 @@ Nodo Sentencias_Insertar():
 {
 	 {atr=new Nodo	("ATRIBUTOS",0,0);}
 	 t=<IDEN> {raiz = new Nodo("INSERTAR",t.beginLine,t.beginColumn,t.image);}
+	 
 	 <apar> 
 	 r=Rel_Or(){atr.hijos.addLast(r);} 
 	   (<coma> r=Rel_Or(){atr.hijos.addLast(r);} )* 
-	 {raiz.hijos.addLast(atr);}
 	 <cpar> 
-	 		  ({atr2=new Nodo("ATRIBUTOS",0,0); }<VALORES> 
-	 		  	<apar>  
-	 		  	      r=Rel_Or(){atr2.hijos.addLast(r);} 
-	 		  	      (<coma> r=Rel_Or(){atr2.hijos.addLast(r);} )*  
-	 		  	<cpar>  {raiz.hijos.addLast(atr2); raiz.nombre="INSERTAR_ESPECIAL";} )?
+
+	 {raiz.hijos.addLast(atr);}
+
+	 ({atr2=new Nodo("ATRIBUTOS",0,0); }
+	 	<VALORES> 
+	 	<apar>  
+	 	  r=Rel_Or()			{atr2.hijos.addLast(r);} 
+	 	  (<coma> r=Rel_Or()    {atr2.hijos.addLast(r);} )*  
+	 	 <cpar>  
+	 	{raiz.hijos.addLast(atr2); raiz.nombre="INSERTAR_ESPECIAL";} 
+	 )?
 
 	 {return raiz;}
 }
@@ -571,15 +578,19 @@ Nodo Retornar():
 Nodo Llamada_funcion():
 {Nodo raiz,parametros,aux;Token t;}
 {
-	{parametros=new Nodo("PARAMETROS",0,0);}
+	
 	t=<IDEN> 
+
+	{parametros=new Nodo("PARAMETROS",0,0);
+	 raiz=new Nodo("CALL_FUN",t.beginLine,t.beginColumn,t.image);
+	 }
 	<apar> 
 		(		aux=Rel_Or(){parametros.hijos.addLast(aux);}
-		(<coma> aux=Rel_Or(){parametros.hijos.addLast(aux);})* )* 
+		(<coma> aux=Rel_Or(){parametros.hijos.addLast(aux);})* {raiz.hijos.addLast(parametros);} )? 
 	<cpar>
 
-	{raiz=new Nodo("CALL_FUN",t.beginLine,t.beginColumn,t.image);
-	 raiz.hijos.addLast(parametros);
+	{
+	 
 	 return raiz;
 	}
 }
@@ -749,7 +760,7 @@ Nodo Rel_Or():
 {Nodo uno,dos,raiz;}
 {
     raiz= Rel_And() 
-    			  ( <OR> uno=Rel_And(){dos=raiz; raiz= new Nodo ( "OR",token.beginLine,token.beginColumn ); raiz.hijos.add(dos);raiz.hijos.add(uno);})*
+    			  ( <OR> uno=Rel_And(){dos=raiz; raiz= new Nodo ( "OR",dos,"||",uno);} )*
     {return raiz;}
 }
 
@@ -758,7 +769,7 @@ Nodo Rel_And():
 {Nodo uno,dos,raiz;}
 {
     raiz= Rel_Not() 
-    			  ( <AND> uno=Rel_Not(){dos=raiz; raiz= new Nodo ( "AND",token.beginLine,token.beginColumn ); raiz.hijos.add(dos);raiz.hijos.add(uno);})*
+    			  ( <AND> uno=Rel_Not(){dos=raiz; raiz= new Nodo ( "AND",dos,"&&",uno);})*
     {return raiz;}
 }
 
@@ -776,12 +787,8 @@ Nodo Relacional():
 {Nodo uno,dos,raiz,rel;String t;}
 {
 	
-	raiz=Operacion() ( t=operadores_rel() {rel=new Nodo("OPE_REL",token.beginLine,token.beginLine, t);} uno=Operacion() 
-					   { dos = raiz; raiz=new Nodo("COND",token.beginLine,token.beginLine); 
-					    raiz.hijos.add(dos); 
-					    raiz.hijos.add(rel); 
-					    raiz.hijos.add(uno); 
-					   }
+	raiz=Operacion() ( t=operadores_rel() /*{rel=new Nodo("OPE_REL",token.beginLine,token.beginLine, t);} */ uno=Operacion() 
+					   { dos = raiz; raiz=new Nodo("COND",dos,t,uno);}
 			   		 )* 
 	{return raiz;}
 }	
@@ -801,8 +808,8 @@ String operadores_rel():
 Nodo Operacion():
 {Nodo raiz,uno,dos;}
 {
-   raiz= Multiplica() (  <mas>   uno= Multiplica() 	  { dos = raiz; raiz=new Nodo("MAS",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno); } 
-    			  	   | <menos> uno= Multiplica()    { dos = raiz; raiz=new Nodo("MENOS",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno); } )*
+   raiz= Multiplica() (  <mas>   uno= Multiplica() 	  { dos = raiz; raiz=new Nodo("MAS",dos ,"+",uno); }//
+    			  	   | <menos> uno= Multiplica()    { dos = raiz; raiz=new Nodo("MENOS",dos ,"-",uno); } )*
   {return raiz;}
 }
 
@@ -810,15 +817,15 @@ Nodo Multiplica():
 {Nodo raiz,uno,dos;}
 {
    
-    raiz=Potencia() ( <mult> uno=Potencia() { dos = raiz; raiz=new Nodo("POR",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno); } 
-    				 |<div> uno= Potencia(){ dos = raiz;  raiz=new Nodo("DIV",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno); }  )*
+    raiz=Potencia() ( <mult> uno=Potencia() { dos = raiz; raiz=new Nodo("POR",dos ,"*",uno); }//raiz.hijos.add(dos); raiz.hijos.add(uno); } 
+    				 |<div> uno= Potencia() { dos = raiz; raiz=new Nodo("DIV",dos ,"/",uno); })*
  {return raiz;}
 }
 
 Nodo Potencia():
 {Nodo raiz,uno,dos;}
 {
-	raiz=Expresion() (<potencia> uno= Expresion(){dos = raiz; raiz=new Nodo("EXP",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno);})*
+	raiz=Expresion() (<potencia> uno= Expresion(){dos = raiz; raiz=new Nodo("EXP",dos,"^",uno);})* //token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno);})*
 	{return raiz;}
 }
 
@@ -831,7 +838,7 @@ Nodo Expresion():
 	| t=<NUM> 			{return new Nodo("NUM",t.beginLine,t.beginColumn,t.image);}
   	| t=<FALSE> 		{return new Nodo("FALSE",t.beginLine,t.beginColumn,t.image);}
 	| t=<TRUE>			{return new Nodo("TRUE",t.beginLine,t.beginColumn,t.image);}
-  	| t=<CARACTER> 		{return new Nodo("CHAR",t.beginLine,t.beginColumn,t.image);}
+  	| t=<CARACTER> 		{return new Nodo("TEXT",t.beginLine,t.beginColumn,t.image);}
  	| t=<CADENA>    	{return new Nodo("STRING",t.beginLine,t.beginColumn,t.image);}
 	| t=<DATE_EXP>  	{return new Nodo("DATE",t.beginLine,t.beginColumn,t.image);}
 	| t=<DATE_TIME_EXP> {return new Nodo("DATE TIME",t.beginLine,t.beginColumn,t.image);}

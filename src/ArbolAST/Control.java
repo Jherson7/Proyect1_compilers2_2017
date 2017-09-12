@@ -182,4 +182,8 @@ public class Control {
                 
     }
 
+    public static void imprimirErrores(){
+        for(errores r:lista_error)
+            System.out.println(r.tipo+ ", "+r.descripcion+ ", "+r.linea+", "+r.col);
+    }
 }

@@ -30,7 +30,8 @@ raiz= new Nodo("INICIO",0,0);
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case USAR:
-      case CREAR:{
+      case CREAR:
+      case IDEN:{
         ;
         break;
         }
@@ -58,7 +59,12 @@ raiz.hijos.addLast(sent);
       jj_consume_token(USAR);
       v = jj_consume_token(IDEN);
       jj_consume_token(ptc);
-raiz= new Nodo("USAR",v.beginLine,v.beginColumn,v.image);
+{if ("" != null) return new Nodo("USAR",v.beginLine,v.beginColumn,v.image);}
+      break;
+      }
+    case IDEN:{
+      raiz = Llamada_funcion();
+      jj_consume_token(ptc);
 {if ("" != null) return raiz;}
       break;
       }
@@ -839,8 +845,8 @@ atr.hijos.addLast(r);
       r = Rel_Or();
 atr.hijos.addLast(r);
     }
-raiz.hijos.addLast(atr);
     jj_consume_token(cpar);
+raiz.hijos.addLast(atr);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case VALORES:{
 atr2=new Nodo("ATRIBUTOS",0,0);
@@ -1136,32 +1142,24 @@ raiz=new Nodo("RETORNO",aux);
   }
 
   final public Nodo Llamada_funcion() throws ParseException {Nodo raiz,parametros,aux;Token t;
-parametros=new Nodo("PARAMETROS",0,0);
     t = jj_consume_token(IDEN);
+parametros=new Nodo("PARAMETROS",0,0);
+         raiz=new Nodo("CALL_FUN",t.beginLine,t.beginColumn,t.image);
     jj_consume_token(apar);
-    label_21:
-    while (true) {
-      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case NOT:
-      case key:
-      case NUM:
-      case FALSE:
-      case TRUE:
-      case IDEN:
-      case CARACTER:
-      case CADENA:
-      case DATE_EXP:
-      case DATE_TIME_EXP:{
-        ;
-        break;
-        }
-      default:
-        jj_la1[40] = jj_gen;
-        break label_21;
-      }
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case NOT:
+    case key:
+    case NUM:
+    case FALSE:
+    case TRUE:
+    case IDEN:
+    case CARACTER:
+    case CADENA:
+    case DATE_EXP:
+    case DATE_TIME_EXP:{
       aux = Rel_Or();
 parametros.hijos.addLast(aux);
-      label_22:
+      label_21:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
         case coma:{
@@ -1169,18 +1167,22 @@ parametros.hijos.addLast(aux);
           break;
           }
         default:
-          jj_la1[41] = jj_gen;
-          break label_22;
+          jj_la1[40] = jj_gen;
+          break label_21;
         }
         jj_consume_token(coma);
         aux = Rel_Or();
 parametros.hijos.addLast(aux);
       }
+raiz.hijos.addLast(parametros);
+      break;
+      }
+    default:
+      jj_la1[41] = jj_gen;
+      ;
     }
     jj_consume_token(cpar);
-raiz=new Nodo("CALL_FUN",t.beginLine,t.beginColumn,t.image);
-         raiz.hijos.addLast(parametros);
-         {if ("" != null) return raiz;}
+{if ("" != null) return raiz;}
     throw new Error("Missing return statement in function");
   }
 
@@ -1190,6 +1192,57 @@ raiz= new Nodo("WHILE",t.beginLine,t.beginColumn);
     jj_consume_token(apar);
     aux = Rel_Or();
 raiz.hijos.addLast(aux);
+    jj_consume_token(cpar);
+    jj_consume_token(alla);
+    label_22:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case key:
+      case PARA:
+      case MIENTRAS:
+      case DETENER:
+      case IMPRIMIR:
+      case CONTAR:
+      case BACKUP:
+      case RESTAURAR:
+      case DECLARAR:
+      case DENEGAR:
+      case OTORGAR:
+      case SELECCIONAR:
+      case BORRAR:
+      case ACTUALIZAR:
+      case INSERTAR:
+      case ALTERAR:
+      case RETORNO:
+      case ELIMINAR:
+      case IDEN:{
+        ;
+        break;
+        }
+      default:
+        jj_la1[42] = jj_gen;
+        break label_22;
+      }
+      aux = Sentencias_Usql();
+raiz.hijos.addLast(aux);
+    }
+    jj_consume_token(clla);
+{if ("" != null) return raiz;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public Nodo Ciclo_For() throws ParseException {Nodo raiz,aux;Token t;
+    t = jj_consume_token(PARA);
+raiz= new Nodo("PARA",t.beginLine,t.beginColumn);
+    jj_consume_token(apar);
+    aux = Declaracion();
+raiz.hijos.addLast(aux);
+    jj_consume_token(ptc);
+    aux = Rel_Or();
+raiz.hijos.addLast(aux);
+    jj_consume_token(ptc);
+    t = jj_consume_token(aumentos);
+raiz.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));
     jj_consume_token(cpar);
     jj_consume_token(alla);
     label_23:
@@ -1218,7 +1271,7 @@ raiz.hijos.addLast(aux);
         break;
         }
       default:
-        jj_la1[42] = jj_gen;
+        jj_la1[43] = jj_gen;
         break label_23;
       }
       aux = Sentencias_Usql();
@@ -1229,21 +1282,51 @@ raiz.hijos.addLast(aux);
     throw new Error("Missing return statement in function");
   }
 
-  final public Nodo Ciclo_For() throws ParseException {Nodo raiz,aux;Token t;
-    t = jj_consume_token(PARA);
-raiz= new Nodo("PARA",t.beginLine,t.beginColumn);
+  final public Nodo Ciclo_Selecciona() throws ParseException {Nodo raiz,aux;Token t;
+    t = jj_consume_token(SELECCIONA);
+raiz= new Nodo("SELECCIONA",t.beginLine,t.beginColumn);
     jj_consume_token(apar);
-    aux = Declaracion();
-raiz.hijos.addLast(aux);
-    jj_consume_token(ptc);
     aux = Rel_Or();
 raiz.hijos.addLast(aux);
-    jj_consume_token(ptc);
-    t = jj_consume_token(aumentos);
-raiz.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));
     jj_consume_token(cpar);
     jj_consume_token(alla);
     label_24:
+    while (true) {
+      aux = Casos();
+raiz.hijos.addLast(aux);
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case CASO:{
+        ;
+        break;
+        }
+      default:
+        jj_la1[44] = jj_gen;
+        break label_24;
+      }
+    }
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case DEFECTO:{
+      aux = Defecto();
+raiz.hijos.addLast(aux);
+      break;
+      }
+    default:
+      jj_la1[45] = jj_gen;
+      ;
+    }
+    jj_consume_token(clla);
+{if ("" != null) return raiz;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public Nodo Casos() throws ParseException {Nodo raiz,aux,sentencias;Token t;
+sentencias= new Nodo("SENTENCIAS",0,0);
+    t = jj_consume_token(CASO);
+raiz= new Nodo("CASO",t.beginLine,t.beginColumn);
+    aux = Rel_Or();
+raiz.hijos.addLast(aux);
+    jj_consume_token(dosp);
+    label_25:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case key:
@@ -1269,60 +1352,21 @@ raiz.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));
         break;
         }
       default:
-        jj_la1[43] = jj_gen;
-        break label_24;
-      }
-      aux = Sentencias_Usql();
-raiz.hijos.addLast(aux);
-    }
-    jj_consume_token(clla);
-{if ("" != null) return raiz;}
-    throw new Error("Missing return statement in function");
-  }
-
-  final public Nodo Ciclo_Selecciona() throws ParseException {Nodo raiz,aux;Token t;
-    t = jj_consume_token(SELECCIONA);
-raiz= new Nodo("SELECCIONA",t.beginLine,t.beginColumn);
-    jj_consume_token(apar);
-    aux = Rel_Or();
-raiz.hijos.addLast(aux);
-    jj_consume_token(cpar);
-    jj_consume_token(alla);
-    label_25:
-    while (true) {
-      aux = Casos();
-raiz.hijos.addLast(aux);
-      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case CASO:{
-        ;
-        break;
-        }
-      default:
-        jj_la1[44] = jj_gen;
+        jj_la1[46] = jj_gen;
         break label_25;
       }
+      aux = Sentencias_Usql();
+sentencias.hijos.addLast(aux);
     }
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case DEFECTO:{
-      aux = Defecto();
-raiz.hijos.addLast(aux);
-      break;
-      }
-    default:
-      jj_la1[45] = jj_gen;
-      ;
-    }
-    jj_consume_token(clla);
-{if ("" != null) return raiz;}
+raiz.hijos.addLast(sentencias);
+                {if ("" != null) return raiz;}
     throw new Error("Missing return statement in function");
   }
 
-  final public Nodo Casos() throws ParseException {Nodo raiz,aux,sentencias;Token t;
+  final public Nodo Defecto() throws ParseException {Nodo raiz,aux,sentencias;Token t;
 sentencias= new Nodo("SENTENCIAS",0,0);
-    t = jj_consume_token(CASO);
-raiz= new Nodo("CASO",t.beginLine,t.beginColumn);
-    aux = Rel_Or();
-raiz.hijos.addLast(aux);
+    t = jj_consume_token(DEFECTO);
+raiz= new Nodo("DEFECTO",t.beginLine,t.beginColumn);
     jj_consume_token(dosp);
     label_26:
     while (true) {
@@ -1350,7 +1394,7 @@ raiz.hijos.addLast(aux);
         break;
         }
       default:
-        jj_la1[46] = jj_gen;
+        jj_la1[47] = jj_gen;
         break label_26;
       }
       aux = Sentencias_Usql();
@@ -1361,11 +1405,15 @@ raiz.hijos.addLast(sentencias);
     throw new Error("Missing return statement in function");
   }
 
-  final public Nodo Defecto() throws ParseException {Nodo raiz,aux,sentencias;Token t;
+  final public Nodo IF() throws ParseException {Nodo raiz,aux,sentencias;Token t;
 sentencias= new Nodo("SENTENCIAS",0,0);
-    t = jj_consume_token(DEFECTO);
-raiz= new Nodo("DEFECTO",t.beginLine,t.beginColumn);
-    jj_consume_token(dosp);
+    t = jj_consume_token(SI);
+raiz= new Nodo("SI",t.beginLine,t.beginColumn);
+    jj_consume_token(apar);
+    aux = Rel_Or();
+raiz.hijos.addLast(aux);
+    jj_consume_token(cpar);
+    jj_consume_token(alla);
     label_27:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1392,26 +1440,17 @@ raiz= new Nodo("DEFECTO",t.beginLine,t.beginColumn);
         break;
         }
       default:
-        jj_la1[47] = jj_gen;
+        jj_la1[48] = jj_gen;
         break label_27;
       }
       aux = Sentencias_Usql();
 sentencias.hijos.addLast(aux);
     }
 raiz.hijos.addLast(sentencias);
-                {if ("" != null) return raiz;}
-    throw new Error("Missing return statement in function");
-  }
-
-  final public Nodo IF() throws ParseException {Nodo raiz,aux,sentencias;Token t;
-sentencias= new Nodo("SENTENCIAS",0,0);
-    t = jj_consume_token(SI);
-raiz= new Nodo("SI",t.beginLine,t.beginColumn);
-    jj_consume_token(apar);
-    aux = Rel_Or();
-raiz.hijos.addLast(aux);
-    jj_consume_token(cpar);
+    jj_consume_token(clla);
+    jj_consume_token(SINO);
     jj_consume_token(alla);
+sentencias= new Nodo("SENTENCIAS",0,0);
     label_28:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1438,45 +1477,8 @@ raiz.hijos.addLast(aux);
         break;
         }
       default:
-        jj_la1[48] = jj_gen;
-        break label_28;
-      }
-      aux = Sentencias_Usql();
-sentencias.hijos.addLast(aux);
-    }
-raiz.hijos.addLast(sentencias);
-    jj_consume_token(clla);
-    jj_consume_token(SINO);
-    jj_consume_token(alla);
-sentencias= new Nodo("SENTENCIAS",0,0);
-    label_29:
-    while (true) {
-      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case key:
-      case PARA:
-      case MIENTRAS:
-      case DETENER:
-      case IMPRIMIR:
-      case CONTAR:
-      case BACKUP:
-      case RESTAURAR:
-      case DECLARAR:
-      case DENEGAR:
-      case OTORGAR:
-      case SELECCIONAR:
-      case BORRAR:
-      case ACTUALIZAR:
-      case INSERTAR:
-      case ALTERAR:
-      case RETORNO:
-      case ELIMINAR:
-      case IDEN:{
-        ;
-        break;
-        }
-      default:
         jj_la1[49] = jj_gen;
-        break label_29;
+        break label_28;
       }
       aux = Sentencias_Usql();
 sentencias.hijos.addLast(aux);
@@ -1539,7 +1541,7 @@ variables=new Nodo("Lista_Variables",0,0);
     t = jj_consume_token(DECLARAR);
     aux = Variables();
 variables.hijos.addLast(aux);
-    label_30:
+    label_29:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case coma:{
@@ -1548,7 +1550,7 @@ variables.hijos.addLast(aux);
         }
       default:
         jj_la1[51] = jj_gen;
-        break label_30;
+        break label_29;
       }
       jj_consume_token(coma);
       aux = Variables();
@@ -1576,7 +1578,7 @@ raiz=new Nodo("DECLARAR",t.beginLine,t.beginColumn);
 
   final public Nodo Rel_Or() throws ParseException {Nodo uno,dos,raiz;
     raiz = Rel_And();
-    label_31:
+    label_30:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case OR:{
@@ -1585,11 +1587,11 @@ raiz=new Nodo("DECLARAR",t.beginLine,t.beginColumn);
         }
       default:
         jj_la1[52] = jj_gen;
-        break label_31;
+        break label_30;
       }
       jj_consume_token(OR);
       uno = Rel_And();
-dos=raiz; raiz= new Nodo ( "OR",token.beginLine,token.beginColumn ); raiz.hijos.add(dos);raiz.hijos.add(uno);
+dos=raiz; raiz= new Nodo ( "OR",dos,"||",uno);
     }
 {if ("" != null) return raiz;}
     throw new Error("Missing return statement in function");
@@ -1597,7 +1599,7 @@ dos=raiz; raiz= new Nodo ( "OR",token.beginLine,token.beginColumn ); raiz.hijos.
 
   final public Nodo Rel_And() throws ParseException {Nodo uno,dos,raiz;
     raiz = Rel_Not();
-    label_32:
+    label_31:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case AND:{
@@ -1606,11 +1608,11 @@ dos=raiz; raiz= new Nodo ( "OR",token.beginLine,token.beginColumn ); raiz.hijos.
         }
       default:
         jj_la1[53] = jj_gen;
-        break label_32;
+        break label_31;
       }
       jj_consume_token(AND);
       uno = Rel_Not();
-dos=raiz; raiz= new Nodo ( "AND",token.beginLine,token.beginColumn ); raiz.hijos.add(dos);raiz.hijos.add(uno);
+dos=raiz; raiz= new Nodo ( "AND",dos,"&&",uno);
     }
 {if ("" != null) return raiz;}
     throw new Error("Missing return statement in function");
@@ -1648,7 +1650,7 @@ raiz = new Nodo("NOT",uno);
 
   final public Nodo Relacional() throws ParseException {Nodo uno,dos,raiz,rel;String t;
     raiz = Operacion();
-    label_33:
+    label_32:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case IIG:
@@ -1662,15 +1664,11 @@ raiz = new Nodo("NOT",uno);
         }
       default:
         jj_la1[55] = jj_gen;
-        break label_33;
+        break label_32;
       }
       t = operadores_rel();
-rel=new Nodo("OPE_REL",token.beginLine,token.beginLine, t);
-      uno = Operacion();
-dos = raiz; raiz=new Nodo("COND",token.beginLine,token.beginLine);
-                                            raiz.hijos.add(dos);
-                                            raiz.hijos.add(rel);
-                                            raiz.hijos.add(uno);
+      /*{rel=new Nodo("OPE_REL",token.beginLine,token.beginLine, t);} */ uno = Operacion();
+dos = raiz; raiz=new Nodo("COND",dos,t,uno);
     }
 {if ("" != null) return raiz;}
     throw new Error("Missing return statement in function");
@@ -1718,7 +1716,7 @@ dos = raiz; raiz=new Nodo("COND",token.beginLine,token.beginLine);
 
   final public Nodo Operacion() throws ParseException {Nodo raiz,uno,dos;
     raiz = Multiplica();
-    label_34:
+    label_33:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case mas:
@@ -1728,19 +1726,19 @@ dos = raiz; raiz=new Nodo("COND",token.beginLine,token.beginLine);
         }
       default:
         jj_la1[57] = jj_gen;
-        break label_34;
+        break label_33;
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case mas:{
         jj_consume_token(mas);
         uno = Multiplica();
-dos = raiz; raiz=new Nodo("MAS",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno);
+dos = raiz; raiz=new Nodo("MAS",dos ,"+",uno);
         break;
         }
       case menos:{
         jj_consume_token(menos);
         uno = Multiplica();
-dos = raiz; raiz=new Nodo("MENOS",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno);
+dos = raiz; raiz=new Nodo("MENOS",dos ,"-",uno);
         break;
         }
       default:
@@ -1755,7 +1753,7 @@ dos = raiz; raiz=new Nodo("MENOS",token.beginLine,token.beginColumn); raiz.hijos
 
   final public Nodo Multiplica() throws ParseException {Nodo raiz,uno,dos;
     raiz = Potencia();
-    label_35:
+    label_34:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case div:
@@ -1765,19 +1763,19 @@ dos = raiz; raiz=new Nodo("MENOS",token.beginLine,token.beginColumn); raiz.hijos
         }
       default:
         jj_la1[59] = jj_gen;
-        break label_35;
+        break label_34;
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case mult:{
         jj_consume_token(mult);
         uno = Potencia();
-dos = raiz; raiz=new Nodo("POR",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno);
+dos = raiz; raiz=new Nodo("POR",dos ,"*",uno);
         break;
         }
       case div:{
         jj_consume_token(div);
         uno = Potencia();
-dos = raiz;  raiz=new Nodo("DIV",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno);
+dos = raiz; raiz=new Nodo("DIV",dos ,"/",uno);
         break;
         }
       default:
@@ -1792,7 +1790,7 @@ dos = raiz;  raiz=new Nodo("DIV",token.beginLine,token.beginColumn); raiz.hijos.
 
   final public Nodo Potencia() throws ParseException {Nodo raiz,uno,dos;
     raiz = Expresion();
-    label_36:
+    label_35:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case potencia:{
@@ -1801,11 +1799,11 @@ dos = raiz;  raiz=new Nodo("DIV",token.beginLine,token.beginColumn); raiz.hijos.
         }
       default:
         jj_la1[61] = jj_gen;
-        break label_36;
+        break label_35;
       }
       jj_consume_token(potencia);
       uno = Expresion();
-dos = raiz; raiz=new Nodo("EXP",token.beginLine,token.beginColumn); raiz.hijos.add(dos); raiz.hijos.add(uno);
+dos = raiz; raiz=new Nodo("EXP",dos,"^",uno);
     }
 {if ("" != null) return raiz;}
     throw new Error("Missing return statement in function");
@@ -1841,7 +1839,7 @@ dos = raiz; raiz=new Nodo("EXP",token.beginLine,token.beginColumn); raiz.hijos.a
       }
     case CARACTER:{
       t = jj_consume_token(CARACTER);
-{if ("" != null) return new Nodo("CHAR",t.beginLine,t.beginColumn,t.image);}
+{if ("" != null) return new Nodo("TEXT",t.beginLine,t.beginColumn,t.image);}
       break;
       }
     case CADENA:{
@@ -1953,16 +1951,16 @@ dos = raiz; raiz=new Nodo("EXP",token.beginLine,token.beginColumn); raiz.hijos.a
       jj_la1_init_3();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x40000000,0x8000000,0x0,0x40000000,0x40000000,0x0,0x0,0x80000,0x80000,0x8000000,0x0,0x8000000,0x8000000,0x0,0x80000,0x0,0x8000000,0x8000000,0x0,0x8000000,0x8000000,0x0,0x0,0x8000000,0x8000000,0x0,0x8000000,0x8000000,0x0,0x0,0x40010000,0x8000000,0x40000000,0x40000000,0x0,0x0,0x40000000,0x40000000,0x40000000,0x40000000,0x10000000,0x8000000,0x4000,0x8000,0x40010000,0x3f00,0x3f00,0x300000,0x300000,0xc0000,0xc0000,0x20000,0x40000000,0x0,};
+      jj_la1_0 = new int[] {0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x40000000,0x8000000,0x0,0x40000000,0x40000000,0x0,0x0,0x80000,0x80000,0x8000000,0x0,0x8000000,0x8000000,0x0,0x80000,0x0,0x8000000,0x8000000,0x0,0x8000000,0x8000000,0x0,0x0,0x8000000,0x8000000,0x0,0x8000000,0x8000000,0x0,0x0,0x8000000,0x40010000,0x40000000,0x40000000,0x0,0x0,0x40000000,0x40000000,0x40000000,0x40000000,0x10000000,0x8000000,0x4000,0x8000,0x40010000,0x3f00,0x3f00,0x300000,0x300000,0xc0000,0xc0000,0x20000,0x40000000,0x0,};
    }
    private static void jj_la1_init_1() {
       jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x20,0x0,0x0,0x0,0x0,0x0,0x187e6780,0x0,0x0,0x187e6780,0x187e6780,0x18000,0x18000,0x0,0x0,0x0,0x40000000,0x0,0x0,0x40000000,0x0,0x40000000,0x0,0x0,0x80000000,0x0,0x0,0x40000000,0x20,0x0,0x0,0x6000000,0x0,0x0,0x6000000,0x20,0x0,0x0,0x187e6780,0x187e6780,0x10,0x40,0x187e6780,0x187e6780,0x187e6780,0x187e6780,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_2() {
-      jj_la1_2 = new int[] {0x102,0x102,0x0,0x3fc02000,0xf4,0x0,0x203e00,0x203e00,0x0,0x3fc02000,0x20009,0x0,0x3fc02000,0x20009,0x20009,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x84,0x0,0x0,0x0,0x0,0x0,0x0,0xc4,0x40000000,0x0,0x20009,0x20009,0x0,0x0,0x20009,0x20009,0x20009,0x20009,0x0,0x0,0x0,0x0,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000000,0x3fc02000,};
+      jj_la1_2 = new int[] {0x102,0x102,0x0,0x3fc02000,0xf4,0x0,0x203e00,0x203e00,0x0,0x3fc02000,0x20009,0x0,0x3fc02000,0x20009,0x20009,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x84,0x0,0x0,0x0,0x0,0x0,0x0,0xc4,0x0,0x40000000,0x20009,0x20009,0x0,0x0,0x20009,0x20009,0x20009,0x20009,0x0,0x0,0x0,0x0,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000000,0x3fc02000,};
    }
    private static void jj_la1_init_3() {
-      jj_la1_3 = new int[] {0x0,0x0,0x0,0xc,0x0,0x0,0x0,0x0,0x0,0xc,0x4,0x0,0xc,0x4,0x4,0x0,0x0,0x4,0x4,0x0,0x0,0x0,0x0,0x0,0x4,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x46f,0x0,0x4,0x4,0x0,0x0,0x4,0x4,0x4,0x4,0x0,0x0,0x0,0x0,0x46f,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x46f,0xc,};
+      jj_la1_3 = new int[] {0x4,0x4,0x0,0xc,0x0,0x0,0x0,0x0,0x0,0xc,0x4,0x0,0xc,0x4,0x4,0x0,0x0,0x4,0x4,0x0,0x0,0x0,0x0,0x0,0x4,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x46f,0x4,0x4,0x0,0x0,0x4,0x4,0x4,0x4,0x0,0x0,0x0,0x0,0x46f,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x46f,0xc,};
    }
 
   /** Constructor with InputStream. */
