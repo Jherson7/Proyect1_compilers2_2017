@@ -9,6 +9,7 @@ import base_datos.procedimientos;
 import base_datos.tabla;
 import base_datos.usuario;
 import base_datos.registro_tabla;
+import consultas.consulta;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -398,6 +399,12 @@ public class ejecutor {
             case "INSERTAR_ESPECIAL":
                 insertarEspecial(raiz);
                 break;
+            case "SELECCIONAR_*":
+                seleccionarTodo(raiz);
+                break;
+            case "SELECCIONAR":
+                seleccionarEspecial(raiz);
+                break;
                     
         }
     }
@@ -753,6 +760,29 @@ public class ejecutor {
         }else
             Control.agregarError(new errores("SEMANTICO","Numero de parametros incorrectos: "+nombre,raiz.fila,raiz.columna));
     }
+
+    private void seleccionarTodo(Nodo raiz) {
+        //cargar las tablas que fueron seleccionadas
+        Nodo tabla=raiz.hijos.get(0);
+        System.out.println("Sazo");
+        LinkedList<tabla>cartesiano = new LinkedList<>();
+        for(Nodo t:tabla.hijos){
+            if(actual.tablas.containsKey(t.nombre)){
+                tabla aux= actual.tablas.get(t.nombre);
+                cartesiano.addLast(aux);
+            }else{
+                Control.agregarError(new errores("SEMANTICO", "NO existe tabla para realizar el select: "+t.nombre, t.fila, t.columna));
+                return;
+            }
+        }
+        consulta.productoCartesiano(cartesiano);
+    }
+
+    private void seleccionarEspecial(Nodo raiz) {
+       
+    }
+
+    
     
     
     }
