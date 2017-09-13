@@ -535,7 +535,6 @@ public class ejecutor {
          return true;
      }
 
-    
     //vamos a levantar el nodo EXP
     private Object evaluarEXPRESION(Nodo nodo)
         {
@@ -597,6 +596,8 @@ public class ejecutor {
             return 1;
         }
 
+   /********** SECCION OPERADORES ARITMETICOS /******************/
+    
     private Object evaluarNUMERO(Nodo val) {//ver si tengo que manejar solo un tipo de valor
         //if (val.nombre.contains(".")|| val.nombre.length()>10)
                 return Double.parseDouble(val.nombre);
@@ -838,7 +839,6 @@ public class ejecutor {
         }
     }
 
-    
     /************************** seccion insertado especial ***********/
     
     private void insertarEspecial(Nodo raiz) {
@@ -1074,6 +1074,8 @@ public class ejecutor {
          }
     }
 
+    /************** SECCION DE OPERADORES RELACIONALES***************/
+    
     private Object evaluarOR(Nodo izq, Nodo der) {
            try
             {
@@ -1122,18 +1124,6 @@ public class ejecutor {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    private Object evaluarID(Nodo izq) {
-        String nombre = izq.nombre;
-        for(HashMap<String,variable> aux:ambito){
-            if(aux.containsKey(nombre))
-            {
-                variable v = aux.get(nombre);
-                return v.valor;
-            }
-        }
-        return null;
     }
 
     private Object evaluarNOT(Nodo izq) {
@@ -1285,7 +1275,20 @@ public class ejecutor {
         Control.agregarError(new errores("SEMANTICO", "No se puede comparar <=con los tipos: "+uno+","+dos, izq.fila, der.columna));
         return null;
     }
-
+    /***************************************************************/
+   
+    private Object evaluarID(Nodo izq) {
+        String nombre = izq.nombre;
+        for(HashMap<String,variable> aux:ambito){
+            if(aux.containsKey(nombre))
+            {
+                variable v = aux.get(nombre);
+                return v.valor;
+            }
+        }
+        return null;
+    }
+    
     private int retornarAssci(String cad) {
         int res =0;
         for (int x=0;x<cad.length();x++)
@@ -1308,8 +1311,6 @@ public class ejecutor {
         return -1;
     }
     
-    
-
 }//fin clase ejecutor
 
 

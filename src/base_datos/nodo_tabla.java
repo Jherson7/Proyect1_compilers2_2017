@@ -7,6 +7,7 @@ package base_datos;
  */
 public class nodo_tabla {
     public String tipo;//tipo para mientras va a ser nombre_atributo
+    //public String
     public Object valor;
     public boolean pk,fk,auto_inc,nulo,unique;
     
