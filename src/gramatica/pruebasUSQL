@@ -3,16 +3,19 @@ CREAR BASE_DATOS prueba;
 USAR prueba;
 
 
-CREAR TABLA estudiante(
-		INTEGER carnet LLAVE_PRIMARIA,
-		TEXT nombre NO NULO,
-		TEXT apellido NO NULO
-	);
-
-	CREAR TABLA curso(
+CREAR TABLA curso(
 		INTEGER codigo_curso LLAVE_PRIMARIA,
 		TEXT nombre NO NULO
 	);
+
+CREAR TABLA estudiante(
+		INTEGER carnet LLAVE_PRIMARIA,
+		TEXT nombre NO NULO,
+		TEXT apellido NO NULO,
+		INTEGER curso Llave_Foranea curso codigo_curso
+	);
+
+	
 
 	CREAR TABLA asignacion(
 		INTEGER codigo LLAVE_PRIMARIA,

@@ -26,7 +26,8 @@ public class atributos {
         this.tipo = tipo;
         this.nulo = nulo;
         this.valor=null;
-        this.valor_increment=0;
+        this.fk="";
+        //this.valor_increment=0;
     }
     
     public atributos(String nombre, String tipo) {
@@ -34,6 +35,7 @@ public class atributos {
         this.tipo = tipo;
         this.nulo = this.foreing_key=this.primary_key = this.unique=false;
         this.valor=null;
+        this.fk="";
         this.valor_increment=0;
     }
 
@@ -42,6 +44,7 @@ public class atributos {
         this.tipo = tipo;
         this.nulo = this.foreing_key=this.primary_key = this.unique=false;
         this.valor=res;
+        this.fk="";
         this.valor_increment=0;
     }
     

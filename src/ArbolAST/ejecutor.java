@@ -36,11 +36,15 @@ public class ejecutor {
     public usuario user=null;
     public HashMap<String,variable> lista_actual;
     public LinkedList< HashMap<String,variable>> ambito;
+    public boolean retorno;
+    public boolean continuar;
+    
     
     public ejecutor() {
         ambito = new LinkedList<>();
         Control.iniciar();
         aumentarAmbito();//ambito global
+        retorno=continuar=false;
     }
     
     public void aumentarAmbito(){
@@ -230,11 +234,13 @@ public class ejecutor {
             if(auxt!=null){
                 for(atributos atr:auxt.atributos){
                     if(atr.nombre.equals(atributo))
-                    {atri.foreing_key=true; return true;}
+                    {atri.foreing_key=true; atri.fk=atri.nombre; return true;}
+                    //hace referencia a la tabla, por tanto hay que ir a buscar su clave primaria
                 }
             }
         } catch (Exception e) {
             //no existe la tabla para hacer referencia
+            Control.agregarError(new errores("SEMANTICO","Violacion de la llave foranea, no existe la tabla: "+nombre,raiz.fila,raiz.columna));
             return false;
         }
        return false;
@@ -400,6 +406,7 @@ public class ejecutor {
         return null;
     }
     
+   /**********SENTENCIAS USQL**********/
     private void sentenciasUSQL(Nodo raiz){
         switch(raiz.nombre){
             case "SENTENCIAS":
@@ -418,6 +425,18 @@ public class ejecutor {
                 break;
             case "SELECCIONAR":
                 seleccionarEspecial(raiz);
+                break;
+            case "MIENTRAS":
+                ejecutarMientras(raiz);
+                break;
+            case "SI":
+                ejecutarIF(raiz);
+                break;
+            case "SELECCIONA":
+                ejecutarCase(raiz);
+                break;
+            case "PARA":
+                ejecutarFOR(raiz);
                 break;
                     
         }
@@ -449,6 +468,7 @@ public class ejecutor {
                             nuevo.foreing_key=r.foreing_key;
                             nuevo.primary_key=r.primary_key;
                             nuevo.unique=r.unique;
+                            nuevo.fk=r.fk;
                             valores.addLast(nuevo);
                         } else {
                             fl = false;
@@ -476,7 +496,7 @@ public class ejecutor {
         
         for(int a=0;a<valores.size();a++){
             atributos atr=valores.get(a);
-            nodo_tabla nodo= new nodo_tabla(atr.nombre, atr.valor);
+            nodo_tabla nodo= new nodo_tabla(atr.tipo,atr.nombre, atr.valor);
             if(aux.atributos.get(a).primary_key){
              if(buscarPrimary(aux.registros, valores.get(a))){
                     //no existe este registro
@@ -493,7 +513,30 @@ public class ejecutor {
             }
             else if(aux.atributos.get(a).foreing_key){
                 //buscar la tabla a la que hace referencia
-                nodo.fk=true;
+                String nombre= aux.atributos.get(a).fk;
+                int foreigen = (int)valores.get(a).valor;
+                boolean hay =false;
+                if(actual.tablas.containsKey(nombre)){
+                    tabla extrajera = actual.tablas.get(nombre);
+                    for(registro_tabla x:extrajera.registros){
+                        if(hay)
+                            break;
+                        for(nodo_tabla y : x.registro){
+                            if(y.pk)
+                                if((int)y.valor==foreigen){
+                                    nodo.fk=true; 
+                                    hay=true; 
+                                    nodo.foreing=nombre;
+                                    break;
+                                }
+                        }
+                    }
+                }
+                if(!hay){
+                    nodo.fk=false;
+                    Control.agregarError(new errores("SEMANTICO","NO existe registro en tabla: "+valores.get(a).tipo+", con PK: "+valores.get(a).valor,0,0));
+                    return;
+                }
                 //ver si tambien tengo que poner aqui a que tabla hace referencia
             }
             nuevo.registro.add(nodo);//el nodo cumplio con todos los registros
@@ -596,6 +639,445 @@ public class ejecutor {
             return 1;
         }
 
+   
+    /************************** seccion insertado especial ***********/
+    
+    private void insertarEspecial(Nodo raiz) {
+        String nombre = raiz.hijos.get(0).nombre;
+        Nodo atri=raiz.hijos.get(1);
+        Nodo valores= raiz.hijos.get(2);
+        
+        LinkedList<atributos>requeridos;
+        LinkedList<atributos>faltantes;
+        
+        tabla aux = null;
+        if (actual.tablas.containsKey(nombre)) {//PRIMERO BUSCAR LA TABLA EN LA BASE DE DATOS ACTUAL
+            aux = actual.tablas.get(nombre);
+            requeridos=new LinkedList<>();
+            faltantes=new LinkedList<>();
+            
+            if(atri.hijos.size()==valores.hijos.size()){
+            //como comparar los atributos que necesito insertar etc...
+            int cont=0;
+            String n_atr = "";
+            
+            for(atributos a:aux.atributos) 
+                faltantes.addLast(a); //sacar la lista de atributos faltantes
+            
+            for(Nodo r: atri.hijos){
+                n_atr=r.hijos.get(0).nombre;
+               for(atributos a:faltantes){
+                   if(a.nombre.equals(n_atr))
+                   {requeridos.addLast(a); faltantes.remove(a);break;}//sacar la lista de atributos requeridos
+               }
+            }
+        }
+            System.out.println("Jherson");
+        
+        //comparar los faltantes
+        //que comparar?
+        //si acepta valores nulos o es auto_increment
+        boolean fl=true;
+        for(atributos r:faltantes){
+         if(r.auto_inc)   
+             fl=true;
+         else if(r.nulo)
+            {fl=false;break;}
+        }
+            
+        //comparamos si los valores faltantes fueron aceptados
+         LinkedList<atributos> a_insert = new LinkedList<>();
+        if(fl){
+            //vamos a castear los valores a insertar
+           int a=0;
+           for(Nodo r:valores.hijos) {
+               Object res = evaluarEXPRESION(r);
+               atributos req  = requeridos.get(a);
+                    if (res != null) {//si el valor de retorno no fue nolo
+                        res = castear(req.tipo, res); //CASTEO DE LOS VALORES
+                        if (res != null) {//se castea al valor que fue definido, null no son del mismo tipo
+                            atributos nuevo = new atributos(req.nombre, req.tipo,res);
+                            nuevo.auto_inc=req.auto_inc;//copiamos las caracteristicas originales
+                            nuevo.foreing_key=req.foreing_key;
+                            nuevo.primary_key=req.primary_key;
+                            nuevo.unique=req.unique;
+                            a_insert.addLast(nuevo);//ver en que momento ingreso el auto_increment
+                        } else {
+                            Control.agregarError(new errores("SEMANTICO","Error en el tipo de dato a insertar: "+res,raiz.fila,raiz.columna));;
+                            return;
+                        }
+                    } else {
+                       Control.agregarError(new errores("SEMANTICO","Error en obtencion de atributo cerca de: ",raiz.fila,raiz.columna));;
+                       return;
+                   } 
+                    a++;
+            }
+        }
+        
+        
+        //vamos a setearle los valores nulos o autoincrementables
+        requeridos.clear();
+            for (atributos h : faltantes) {
+                if (h.auto_inc) {//ver si actualizo en la tabla tambien las cabeceras
+                    atributos nuevo = new atributos(h.nombre, h.tipo, h.valor_increment);
+                    nuevo.auto_inc = true;//copiamos las caracteristicas originales
+                    nuevo.unique = h.unique;
+                    requeridos.addLast(nuevo);
+                    h.valor_increment++;
+                }else{
+                    atributos nuevo = new atributos(h.nombre, h.tipo, null);// mi clase null falta crearla
+                    requeridos.addLast(nuevo);
+                }
+            }
+        
+        LinkedList<atributos> valores_insertar=new LinkedList<>();
+        for(atributos a:aux.atributos){//ponemos en orden los atributos a insertar
+            boolean fp=true;
+            for(atributos h:a_insert){
+                if(a.nombre.equals(h.nombre))
+                {valores_insertar.addLast(h);fp=false; a_insert.remove(h); break;}
+            }
+            if(fp)
+            for(atributos h:faltantes){
+                if(a.nombre.equals(h.nombre))
+                {valores_insertar.addLast(h);fp=false; faltantes.remove(h); break;}
+            }
+            if(fp)
+            {Control.agregarError(new errores("SEMANTICO","Ocurrio un gran error en insertar especial",raiz.fila,raiz.columna)); return;}
+        }
+        
+        ingresarRegistroTabla(aux,valores_insertar);
+        }else
+            Control.agregarError(new errores("SEMANTICO","Numero de parametros incorrectos: "+nombre,raiz.fila,raiz.columna));
+    }
+
+    private void seleccionarTodo(Nodo raiz) {
+        //cargar las tablas que fueron seleccionadas
+        Nodo tabla=raiz.hijos.get(0);
+        
+        LinkedList<tabla>cartesiano = new LinkedList<>();
+        for(Nodo t:tabla.hijos){
+            if(actual.tablas.containsKey(t.nombre)){
+                tabla aux= actual.tablas.get(t.nombre);
+                cartesiano.addLast(aux);
+            }else{
+                Control.agregarError(new errores("SEMANTICO", "NO existe tabla para realizar el select: "+t.nombre, t.fila, t.columna));
+                return;
+            }
+        }
+        consulta.productoCartesiano(cartesiano);
+    }
+
+    private void seleccionarEspecial(Nodo raiz) {
+      //tengo los campos que requiero, pero primero debo hacer el cartesiano
+      Nodo atributos=raiz.hijos.get(0);//nodo con los atributos requeridas
+      Nodo tabla=raiz.hijos.get(1);//nodo con las tablas requeridas
+        
+        LinkedList<tabla> cartesiano = new LinkedList<>();
+        for (Nodo t : tabla.hijos) {
+            if (actual.tablas.containsKey(t.nombre)) {
+                tabla aux = actual.tablas.get(t.nombre);
+                cartesiano.addLast(aux);
+            } else {
+                Control.agregarError(new errores("SEMANTICO", "NO existe tabla para realizar el select: " + t.nombre, t.fila, t.columna));
+                return;
+            }
+        }
+        
+        LinkedList<registro_tabla> resultado =consulta.productoCartesiano(cartesiano);
+       
+        LinkedList<registro_tabla> auxer = new LinkedList<>();
+        if(raiz.hijos.size()==3){
+            Nodo donde = raiz.hijos.get(2);
+            //debo ejecutar donde
+            //hacer un for por cada registro de la tabla
+            //meter a la tabla de simbolos las variables actuales.....
+            for(registro_tabla x:resultado){
+                //llenar registro de nueva tabla
+                aumentarAmbito();
+                llenarVariables(x);
+                Object res = evaluarEXPRESION(donde);
+                try {
+                    if((boolean)res){
+                        auxer.addLast(x);//se cumplio la condicion :D
+                    }
+                } catch (Exception e) {
+                    System.out.println("La expresion no se puede evaluar: "+e.getMessage());
+                    return;
+                }
+                //vaciar registros de la tabla
+            }
+            //mandar a ejecutar nodo cond
+            disminuirAmbito();
+            resultado=auxer;
+            //sacar las variables actuales
+        }
+        
+        resultado= consulta.retornarConCampos(resultado, atributos);
+        
+        int a=0;
+        for(registro_tabla t:resultado){
+            for(nodo_tabla d: t.registro)
+                System.out.print("| "+d.valor);
+            System.out.println("| "+a);a++;
+        } 
+        
+    }
+    
+    private Object castear(String tipo,Object valor){
+        switch(tipo.toUpperCase()){
+            case "DATE" :
+                try {
+                DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                Date date = format.parse(String.valueOf(valor)); 
+                    return date;
+                } catch (ParseException e) {
+                    System.out.println("No es de tipo date"+ e.getMessage());
+                    return null;
+                }
+            case "DATETIME":
+                try {
+                DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date date = format.parse(String.valueOf(valor)); 
+                    return date;
+                } catch (ParseException e) {
+                    System.out.println("No es de tipo date"+ e.getMessage());
+                    return null;
+                }
+                
+            case "TEXT":
+                return String.valueOf(valor);
+            case "INTEGER":
+                try {
+                     Double tmp=Double.parseDouble(valor.toString());
+                     return tmp.intValue();
+                } catch (NumberFormatException e) {
+                    System.out.println("No se puede convertir a integer"+ e.getMessage());
+                    return null;
+                }
+                case "DOUBLE":
+                try {
+                     return Double.parseDouble(String.valueOf(valor));
+                } catch (NumberFormatException e) {
+                    System.out.println("No se puede convertir a double"+ e.getMessage());
+                    return null;
+                }
+        }
+        return null;
+    }
+
+    private void llenarVariables(registro_tabla x) {
+         for(nodo_tabla y : x.registro){
+             variable var = new variable(y.tipo, y.nombre, y.valor);
+             if(!lista_actual.containsKey(y.nombre)){
+                 lista_actual.put(y.nombre, var);
+             }
+         }
+    }
+
+    /************** SECCION DE OPERADORES RELACIONALES***************/
+    
+    private Object evaluarOR(Nodo izq, Nodo der) {
+           try
+            {
+                boolean val1, val2;
+                val1 = (boolean)(evaluarEXPRESION(izq));
+                val2 = (boolean)(evaluarEXPRESION(der));
+                return val1 || val2;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Error al evaluar OR");
+                return null;
+            }
+    }
+
+    private Object evaluarAND(Nodo izq, Nodo der) {
+        try
+            {
+                boolean val1, val2;
+                val1 = (boolean)(evaluarEXPRESION(izq));
+                val2 = (boolean)(evaluarEXPRESION(der));
+                return val1 || val2;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Error al evaluar and");
+                return null;
+            }
+    }
+
+    private Object evaluarIGUAL(Nodo izq, Nodo der) {
+        Object uno = evaluarEXPRESION(izq);
+        Object dos = evaluarEXPRESION(der);
+        try {
+            return uno.equals(dos);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Object evaluarDIFERENTE(Nodo izq, Nodo der) {
+        Object uno = evaluarEXPRESION(izq);
+        Object dos = evaluarEXPRESION(der);
+        try {
+            return !uno.equals(dos);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Object evaluarNOT(Nodo izq) {
+        try {
+            boolean val1 =(boolean)evaluarEXPRESION(izq);
+            return val1;
+        } catch (Exception e) {
+            System.out.println("Error al evaluar NOT");
+            return null;
+        }
+    }
+
+    private Object evaluarMAYORIGUAL(Nodo izq, Nodo der) {
+        Object uno = (evaluarEXPRESION(izq));
+        Object dos = (evaluarEXPRESION(der));
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        
+        if (val1 == val2) {
+            switch (val1) {
+                case 1:
+                    val1=retornarAssci((String)uno);
+                    val2=retornarAssci((String)dos);
+                    return val1>= val2;
+                case 2:
+                    return (double)uno >= (double)dos;
+                case 3:
+                    return (int)uno >= (int)dos;
+                case 4:
+                    return Date.parse(String.valueOf( uno)) >= Date.parse(String.valueOf( dos));
+                default:
+                    return null;
+            }
+            
+        }else if(val1==2|| val1==3||val2==2|| val2==3){
+            uno = castear("double", uno);
+            dos = castear("double", dos);
+            try {
+                return (double)uno >= (double)dos;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        Control.agregarError(new errores("SEMANTICO", "No se puede comparar >= con los tipos: "+uno+","+dos, izq.fila, der.columna));
+        return null;
+    }
+
+    private Object evaluarMAYOR(Nodo izq, Nodo der) {
+        Object uno = (evaluarEXPRESION(izq));
+        Object dos = (evaluarEXPRESION(der));
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        
+        if (val1 == val2) {
+            switch (val1) {
+                case 1:
+                    val1=retornarAssci((String)uno);
+                    val2=retornarAssci((String)dos);
+                    return val1> val2;
+                case 2:
+                    return (double)uno > (double)dos;
+                case 3:
+                    return (int)uno > (int)dos;
+                case 4:
+                    return Date.parse(String.valueOf( uno)) > Date.parse(String.valueOf( dos));
+                default:
+                    return null;
+            }
+            
+        }else if(val1==2|| val1==3||val2==2|| val2==3){
+            uno = castear("double", uno);
+            dos = castear("double", dos);
+            try {
+                return (double)uno > (double)dos;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        Control.agregarError(new errores("SEMANTICO", "No se puede comparar > con los tipos: "+uno+","+dos, izq.fila, der.columna));
+        return null;
+    }
+    
+    private Object evaluarMENOR(Nodo izq, Nodo der) {
+        Object uno = (evaluarEXPRESION(izq));
+        Object dos = (evaluarEXPRESION(der));
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        
+        if (val1 == val2) {
+            switch (val1) {
+                case 1:
+                    val1=retornarAssci((String)uno);
+                    val2=retornarAssci((String)dos);
+                    return val1< val2;
+                case 2:
+                    return (double)uno < (double)dos;
+                case 3:
+                    return (int)uno < (int)dos;
+                case 4:
+                    return Date.parse(String.valueOf( uno)) >= Date.parse(String.valueOf( dos));
+                default:
+                    return null;
+            }
+            
+        }else if(val1==2|| val1==3||val2==2|| val2==3){
+            uno = castear("double", uno);
+            dos = castear("double", dos);
+            try {
+                return (double)uno < (double)dos;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        Control.agregarError(new errores("SEMANTICO", "No se puede comparar < con los tipos: "+uno+","+dos, izq.fila, der.columna));
+        return null;
+    }
+    
+    private Object evaluarMENORIGUAL(Nodo izq, Nodo der) {
+         Object uno = (evaluarEXPRESION(izq));
+        Object dos = (evaluarEXPRESION(der));
+        int val1 = retornarTipo(uno);
+        int val2 = retornarTipo(dos);
+        
+        if (val1 == val2) {
+            switch (val1) {
+                case 1:
+                    val1=retornarAssci((String)uno);
+                    val2=retornarAssci((String)dos);
+                    return val1<= val2;
+                case 2:
+                    return (double)uno <= (double)dos;
+                case 3:
+                    return (int)uno <= (int)dos;
+                case 4:
+                    return Date.parse(String.valueOf( uno)) <= Date.parse(String.valueOf( dos));
+                default:
+                    return null;
+            }
+            
+        }else if(val1==2|| val1==3||val2==2|| val2==3){
+            uno = castear("double", uno);
+            dos = castear("double", dos);
+            try {
+                return (double)uno <= (double)dos;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        Control.agregarError(new errores("SEMANTICO", "No se puede comparar <=con los tipos: "+uno+","+dos, izq.fila, der.columna));
+        return null;
+    }
+    /***************************************************************/
+    
    /********** SECCION OPERADORES ARITMETICOS /******************/
     
     private Object evaluarNUMERO(Nodo val) {//ver si tengo que manejar solo un tipo de valor
@@ -839,444 +1321,6 @@ public class ejecutor {
         }
     }
 
-    /************************** seccion insertado especial ***********/
-    
-    private void insertarEspecial(Nodo raiz) {
-        String nombre = raiz.hijos.get(0).nombre;
-        Nodo atri=raiz.hijos.get(1);
-        Nodo valores= raiz.hijos.get(2);
-        
-        LinkedList<atributos>requeridos;
-        LinkedList<atributos>faltantes;
-        
-        tabla aux = null;
-        if (actual.tablas.containsKey(nombre)) {//PRIMERO BUSCAR LA TABLA EN LA BASE DE DATOS ACTUAL
-            aux = actual.tablas.get(nombre);
-            requeridos=new LinkedList<>();
-            faltantes=new LinkedList<>();
-            
-            if(atri.hijos.size()==valores.hijos.size()){
-            //como comparar los atributos que necesito insertar etc...
-            int cont=0;
-            String n_atr = "";
-            
-            for(atributos a:aux.atributos) 
-                faltantes.addLast(a); //sacar la lista de atributos faltantes
-            
-            for(Nodo r: atri.hijos){
-                n_atr=r.hijos.get(0).nombre;
-               for(atributos a:faltantes){
-                   if(a.nombre.equals(n_atr))
-                   {requeridos.addLast(a); faltantes.remove(a);break;}//sacar la lista de atributos requeridos
-               }
-            }
-        }
-            System.out.println("Jherson");
-        
-        //comparar los faltantes
-        //que comparar?
-        //si acepta valores nulos o es auto_increment
-        boolean fl=true;
-        for(atributos r:faltantes){
-         if(r.auto_inc)   
-             fl=true;
-         else if(r.nulo)
-            {fl=false;break;}
-        }
-            
-        //comparamos si los valores faltantes fueron aceptados
-         LinkedList<atributos> a_insert = new LinkedList<>();
-        if(fl){
-            //vamos a castear los valores a insertar
-           int a=0;
-           for(Nodo r:valores.hijos) {
-               Object res = evaluarEXPRESION(r);
-               atributos req  = requeridos.get(a);
-                    if (res != null) {//si el valor de retorno no fue nolo
-                        res = castear(req.tipo, res); //CASTEO DE LOS VALORES
-                        if (res != null) {//se castea al valor que fue definido, null no son del mismo tipo
-                            atributos nuevo = new atributos(req.nombre, req.tipo,res);
-                            nuevo.auto_inc=req.auto_inc;//copiamos las caracteristicas originales
-                            nuevo.foreing_key=req.foreing_key;
-                            nuevo.primary_key=req.primary_key;
-                            nuevo.unique=req.unique;
-                            a_insert.addLast(nuevo);//ver en que momento ingreso el auto_increment
-                        } else {
-                            Control.agregarError(new errores("SEMANTICO","Error en el tipo de dato a insertar: "+res,raiz.fila,raiz.columna));;
-                            return;
-                        }
-                    } else {
-                       Control.agregarError(new errores("SEMANTICO","Error en obtencion de atributo cerca de: ",raiz.fila,raiz.columna));;
-                       return;
-                   } 
-                    a++;
-            }
-        }
-        
-        
-        //vamos a setearle los valores nulos o autoincrementables
-        requeridos.clear();
-            for (atributos h : faltantes) {
-                if (h.auto_inc) {//ver si actualizo en la tabla tambien las cabeceras
-                    atributos nuevo = new atributos(h.nombre, h.tipo, h.valor_increment);
-                    nuevo.auto_inc = true;//copiamos las caracteristicas originales
-                    nuevo.unique = h.unique;
-                    requeridos.addLast(nuevo);
-                    h.valor_increment++;
-                }else{
-                    atributos nuevo = new atributos(h.nombre, h.tipo, null);// mi clase null falta crearla
-                    requeridos.addLast(nuevo);
-                }
-            }
-        
-        LinkedList<atributos> valores_insertar=new LinkedList<>();
-        for(atributos a:aux.atributos){//ponemos en orden los atributos a insertar
-            boolean fp=true;
-            for(atributos h:a_insert){
-                if(a.nombre.equals(h.nombre))
-                {valores_insertar.addLast(h);fp=false; a_insert.remove(h); break;}
-            }
-            if(fp)
-            for(atributos h:faltantes){
-                if(a.nombre.equals(h.nombre))
-                {valores_insertar.addLast(h);fp=false; faltantes.remove(h); break;}
-            }
-            if(fp)
-            {Control.agregarError(new errores("SEMANTICO","Ocurrio un gran error en insertar especial",raiz.fila,raiz.columna)); return;}
-        }
-        
-        ingresarRegistroTabla(aux,valores_insertar);
-        }else
-            Control.agregarError(new errores("SEMANTICO","Numero de parametros incorrectos: "+nombre,raiz.fila,raiz.columna));
-    }
-
-    private void seleccionarTodo(Nodo raiz) {
-        //cargar las tablas que fueron seleccionadas
-        Nodo tabla=raiz.hijos.get(0);
-        
-        LinkedList<tabla>cartesiano = new LinkedList<>();
-        for(Nodo t:tabla.hijos){
-            if(actual.tablas.containsKey(t.nombre)){
-                tabla aux= actual.tablas.get(t.nombre);
-                cartesiano.addLast(aux);
-            }else{
-                Control.agregarError(new errores("SEMANTICO", "NO existe tabla para realizar el select: "+t.nombre, t.fila, t.columna));
-                return;
-            }
-        }
-        consulta.productoCartesiano(cartesiano);
-    }
-
-    private void seleccionarEspecial(Nodo raiz) {
-      //tengo los campos que requiero, pero primero debo hacer el cartesiano
-      Nodo atributos=raiz.hijos.get(0);//nodo con los atributos requeridas
-      Nodo tabla=raiz.hijos.get(1);//nodo con las tablas requeridas
-        
-        LinkedList<tabla> cartesiano = new LinkedList<>();
-        for (Nodo t : tabla.hijos) {
-            if (actual.tablas.containsKey(t.nombre)) {
-                tabla aux = actual.tablas.get(t.nombre);
-                cartesiano.addLast(aux);
-            } else {
-                Control.agregarError(new errores("SEMANTICO", "NO existe tabla para realizar el select: " + t.nombre, t.fila, t.columna));
-                return;
-            }
-        }
-        
-        LinkedList<registro_tabla> resultado =consulta.productoCartesiano(cartesiano);
-       
-        LinkedList<registro_tabla> auxer = new LinkedList<>();
-        if(raiz.hijos.size()==3){
-            Nodo donde = raiz.hijos.get(2);
-            //debo ejecutar donde
-            //hacer un for por cada registro de la tabla
-            //meter a la tabla de simbolos las variables actuales.....
-            for(registro_tabla x:resultado){
-                //llenar registro de nueva tabla
-                aumentarAmbito();
-                llenarVariables(x);
-                Object res = evaluarEXPRESION(donde);
-                try {
-                    if((boolean)res){
-                        auxer.addLast(x);//se cumplio la condicion :D
-                    }
-                } catch (Exception e) {
-                    System.out.println("La expresion no se puede evaluar: "+e.getMessage());
-                    return;
-                }
-                //vaciar registros de la tabla
-            }
-            //mandar a ejecutar nodo cond
-            disminuirAmbito();
-            resultado=auxer;
-            //sacar las variables actuales
-        }
-        
-        resultado= consulta.retornarConCampos(resultado, atributos);
-        
-        int a=0;
-        for(registro_tabla t:resultado){
-            for(nodo_tabla d: t.registro)
-                System.out.print("| "+d.valor);
-            System.out.println("| "+a);a++;
-        } 
-        
-    }
-    
-    private Object castear(String tipo,Object valor){
-        switch(tipo.toUpperCase()){
-            case "DATE" :
-                try {
-                DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                Date date = format.parse(String.valueOf(valor)); 
-                    return date;
-                } catch (ParseException e) {
-                    System.out.println("No es de tipo date"+ e.getMessage());
-                    return null;
-                }
-            case "DATETIME":
-                try {
-                DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date date = format.parse(String.valueOf(valor)); 
-                    return date;
-                } catch (ParseException e) {
-                    System.out.println("No es de tipo date"+ e.getMessage());
-                    return null;
-                }
-                
-            case "TEXT":
-                return String.valueOf(valor);
-            case "INTEGER":
-                try {
-                     Double tmp=Double.parseDouble(valor.toString());
-                     return tmp.intValue();
-                } catch (NumberFormatException e) {
-                    System.out.println("No se puede convertir a integer"+ e.getMessage());
-                    return null;
-                }
-                case "DOUBLE":
-                try {
-                     return Double.parseDouble(String.valueOf(valor));
-                } catch (NumberFormatException e) {
-                    System.out.println("No se puede convertir a double"+ e.getMessage());
-                    return null;
-                }
-        }
-        return null;
-    }
-
-    private void llenarVariables(registro_tabla x) {
-         for(nodo_tabla y : x.registro){
-             variable var = new variable(y.tipo, y.tipo, y.valor);
-             if(!lista_actual.containsKey(y.tipo)){
-                 lista_actual.put(y.tipo, var);
-             }
-         }
-    }
-
-    /************** SECCION DE OPERADORES RELACIONALES***************/
-    
-    private Object evaluarOR(Nodo izq, Nodo der) {
-           try
-            {
-                boolean val1, val2;
-                val1 = (boolean)(evaluarEXPRESION(izq));
-                val2 = (boolean)(evaluarEXPRESION(der));
-                return val1 || val2;
-            }
-            catch (Exception e)
-            {
-                System.out.println("Error al evaluar OR");
-                return null;
-            }
-    }
-
-    private Object evaluarAND(Nodo izq, Nodo der) {
-        try
-            {
-                boolean val1, val2;
-                val1 = (boolean)(evaluarEXPRESION(izq));
-                val2 = (boolean)(evaluarEXPRESION(der));
-                return val1 || val2;
-            }
-            catch (Exception e)
-            {
-                System.out.println("Error al evaluar and");
-                return null;
-            }
-    }
-
-    private Object evaluarIGUAL(Nodo izq, Nodo der) {
-        Object uno = evaluarEXPRESION(izq);
-        Object dos = evaluarEXPRESION(der);
-        try {
-            return uno.equals(dos);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private Object evaluarDIFERENTE(Nodo izq, Nodo der) {
-        Object uno = evaluarEXPRESION(izq);
-        Object dos = evaluarEXPRESION(der);
-        try {
-            return !uno.equals(dos);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private Object evaluarNOT(Nodo izq) {
-        try {
-            boolean val1 =(boolean)evaluarEXPRESION(izq);
-            return val1;
-        } catch (Exception e) {
-            System.out.println("Error al evaluar NOT");
-            return null;
-        }
-    }
-
-    private Object evaluarMAYORIGUAL(Nodo izq, Nodo der) {
-        Object uno = (evaluarEXPRESION(izq));
-        Object dos = (evaluarEXPRESION(der));
-        int val1 = retornarTipo(uno);
-        int val2 = retornarTipo(dos);
-        
-        if (val1 == val2) {
-            switch (val1) {
-                case 1:
-                    val1=retornarAssci((String)uno);
-                    val2=retornarAssci((String)dos);
-                    return val1>= val2;
-                case 2:
-                    return (double)uno >= (double)dos;
-                case 3:
-                    return (int)uno >= (int)dos;
-                case 4:
-                    return Date.parse(String.valueOf( uno)) >= Date.parse(String.valueOf( dos));
-                default:
-                    return null;
-            }
-            
-        }else if(val1==2|| val1==3||val2==2|| val2==3){
-            uno = castear("double", uno);
-            dos = castear("double", dos);
-            try {
-                return (double)uno >= (double)dos;
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-        Control.agregarError(new errores("SEMANTICO", "No se puede comparar >= con los tipos: "+uno+","+dos, izq.fila, der.columna));
-        return null;
-    }
-
-    private Object evaluarMAYOR(Nodo izq, Nodo der) {
-        Object uno = (evaluarEXPRESION(izq));
-        Object dos = (evaluarEXPRESION(der));
-        int val1 = retornarTipo(uno);
-        int val2 = retornarTipo(dos);
-        
-        if (val1 == val2) {
-            switch (val1) {
-                case 1:
-                    val1=retornarAssci((String)uno);
-                    val2=retornarAssci((String)dos);
-                    return val1> val2;
-                case 2:
-                    return (double)uno > (double)dos;
-                case 3:
-                    return (int)uno > (int)dos;
-                case 4:
-                    return Date.parse(String.valueOf( uno)) > Date.parse(String.valueOf( dos));
-                default:
-                    return null;
-            }
-            
-        }else if(val1==2|| val1==3||val2==2|| val2==3){
-            uno = castear("double", uno);
-            dos = castear("double", dos);
-            try {
-                return (double)uno > (double)dos;
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-        Control.agregarError(new errores("SEMANTICO", "No se puede comparar > con los tipos: "+uno+","+dos, izq.fila, der.columna));
-        return null;
-    }
-    
-    private Object evaluarMENOR(Nodo izq, Nodo der) {
-        Object uno = (evaluarEXPRESION(izq));
-        Object dos = (evaluarEXPRESION(der));
-        int val1 = retornarTipo(uno);
-        int val2 = retornarTipo(dos);
-        
-        if (val1 == val2) {
-            switch (val1) {
-                case 1:
-                    val1=retornarAssci((String)uno);
-                    val2=retornarAssci((String)dos);
-                    return val1< val2;
-                case 2:
-                    return (double)uno < (double)dos;
-                case 3:
-                    return (int)uno < (int)dos;
-                case 4:
-                    return Date.parse(String.valueOf( uno)) >= Date.parse(String.valueOf( dos));
-                default:
-                    return null;
-            }
-            
-        }else if(val1==2|| val1==3||val2==2|| val2==3){
-            uno = castear("double", uno);
-            dos = castear("double", dos);
-            try {
-                return (double)uno < (double)dos;
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-        Control.agregarError(new errores("SEMANTICO", "No se puede comparar < con los tipos: "+uno+","+dos, izq.fila, der.columna));
-        return null;
-    }
-    
-    private Object evaluarMENORIGUAL(Nodo izq, Nodo der) {
-         Object uno = (evaluarEXPRESION(izq));
-        Object dos = (evaluarEXPRESION(der));
-        int val1 = retornarTipo(uno);
-        int val2 = retornarTipo(dos);
-        
-        if (val1 == val2) {
-            switch (val1) {
-                case 1:
-                    val1=retornarAssci((String)uno);
-                    val2=retornarAssci((String)dos);
-                    return val1<= val2;
-                case 2:
-                    return (double)uno <= (double)dos;
-                case 3:
-                    return (int)uno <= (int)dos;
-                case 4:
-                    return Date.parse(String.valueOf( uno)) <= Date.parse(String.valueOf( dos));
-                default:
-                    return null;
-            }
-            
-        }else if(val1==2|| val1==3||val2==2|| val2==3){
-            uno = castear("double", uno);
-            dos = castear("double", dos);
-            try {
-                return (double)uno <= (double)dos;
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-        Control.agregarError(new errores("SEMANTICO", "No se puede comparar <=con los tipos: "+uno+","+dos, izq.fila, der.columna));
-        return null;
-    }
-    /***************************************************************/
-   
     private Object evaluarID(Nodo izq) {
         String nombre = izq.nombre;
         for(HashMap<String,variable> aux:ambito){
@@ -1296,7 +1340,7 @@ public class ejecutor {
         return res;
     }
      
-    private int retornarTipo(Object a){
+    private int retornarTipo(Object a){//probar retornar tipo
         if(a instanceof String)
             return 1;
         else if (a instanceof Double)
@@ -1310,6 +1354,110 @@ public class ejecutor {
         
         return -1;
     }
+
+    /****************CICLOS DE BIFURCACION******/
+    private void ejecutarMientras(Nodo raiz) {
+        Nodo cond = raiz.hijos.get(0);
+        try {
+            while((boolean)evaluarEXPRESION(cond)){
+                if(retorno)
+                    break;
+                aumentarAmbito();
+                sentenciasUSQL(raiz.hijos.get(1));
+                disminuirAmbito();
+            }
+        } catch (Exception e) {
+            Control.agregarError(new errores("SEMANTICO","Error en la evaluacion de condicion en ciclo while",raiz.fila,raiz.columna));
+        }
+        
+    }
+    
+    
+    /* For Each hoja In arbol.hijos
+                    If (detener = False And continuar = False) Then
+                        ejecutarMain(hoja)
+                    End If
+                Next*/
+
+    private void ejecutarIF(Nodo raiz) {
+        Nodo cond = raiz.hijos.get(0);
+        try {
+            if((boolean)evaluarEXPRESION(cond)){
+                aumentarAmbito();
+                sentenciasUSQL(raiz.hijos.get(1));
+                disminuirAmbito();
+            }else{
+                if(raiz.hijos.size()==3)
+                {
+                    aumentarAmbito();
+                    sentenciasUSQL(raiz.hijos.get(2));
+                    disminuirAmbito();
+                }
+            }
+        } catch (Exception e) {
+            Control.agregarError(new errores("SEMANTICO","Error en la evaluacion de condicion en ciclo IF",raiz.fila,raiz.columna));
+        }
+    }
+
+    private void ejecutarCase(Nodo raiz) {
+        Object cond = evaluarEXPRESION(raiz.hijos.get(0));
+        
+        if(cond==null){
+            Control.agregarError(new errores("SEMANTICO","Error al evaluar la condion en selecciona",raiz.fila,raiz.columna));
+            return;
+        }
+        int val = retornarTipo(cond);
+        if(val==-1|| val>3){
+            Control.agregarError(new errores("SEMANTICO","Solo se admiten tipos TEXT,NUMBER,DOBLE en selecciona",raiz.fila,raiz.columna));
+            return;
+        }
+        Nodo casos = raiz.hijos.get(1);
+        boolean entro = false;
+        for (Nodo x : casos.hijos) {
+            if (entro) {
+                sentenciasUSQL(x.hijos.get(1));
+            } else {
+                Object aux = evaluarEXPRESION(x.hijos.get(0));
+                //comparar los tipos..... que sean del mismo que se declaro
+                if (cond.equals(aux)) {
+                    entro = true;
+                    aumentarAmbito();
+                    sentenciasUSQL(x.hijos.get(1));
+                    disminuirAmbito();
+                }
+            }
+        }
+        if(!entro){
+            if(raiz.hijos.size()==3)
+                sentenciasUSQL(raiz.hijos.get(2));
+        }
+    }
+
+    private void ejecutarFOR(Nodo raiz) {
+        Nodo declara = raiz.hijos.get(0);
+        Nodo cond = raiz.hijos.get(1);
+        Nodo aumento= raiz.hijos.get(2);
+        Nodo sent = raiz.hijos.get(3);
+        String var = declara.hijos.get(0).nombre;
+        
+        //ejecutar declaracion
+        
+        try {
+            while((boolean)evaluarEXPRESION(cond)){
+                aumentarAmbito();
+                sentenciasUSQL(raiz);
+                disminuirAmbito();
+                realizarAumento(var,aumento);
+            }
+        } catch (Exception e) {
+            Control.agregarError(new errores("SEMANTICO","error al evaluar la condicion de for: ",raiz.fila,raiz.columna));
+        }
+    }
+
+    private void realizarAumento(String var, Nodo aumento) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
     
 }//fin clase ejecutor
 

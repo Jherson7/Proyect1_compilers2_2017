@@ -199,7 +199,7 @@ public class levantarBase {
             //`` en hijo 1 tiene el valor del atributo
             
             Nodo auxia=auxi.hijos.get(1);
-            nodo_tabla nodo = new nodo_tabla(auxi.hijos.get(0).nombre,auxi.hijos.get(1).nombre);
+            nodo_tabla nodo = new nodo_tabla("Falta agregarle TIPO",auxi.hijos.get(0).nombre,auxi.hijos.get(1).nombre);
             if(aux.auto_inc)
                 nodo.auto_inc=true;
             if(aux.primary_key)

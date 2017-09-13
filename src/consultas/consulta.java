@@ -37,6 +37,7 @@ public class consulta {
                 System.out.print("| "+d.valor);
             System.out.println("| "+a);a++;
         } 
+        System.out.println("----------------------*************-----------------------");
        return ultima;
       
     }
@@ -115,7 +116,6 @@ public class consulta {
                             z.registro.addLast(w);
                         }
                         lista_x.addLast(z);
-                        
                     }
                     //lista_aux.add(lista_x);
                     prueba3(tablas, lista_x, ultima, cont+1, v.registros);
@@ -140,16 +140,13 @@ public class consulta {
             
             for(String c:cabeceras){
                for(nodo_tabla y:x.registro){
-                if(y.tipo.equals(cabeceras.get(a)))
+                if(y.nombre.equals(cabeceras.get(a)))
                     { aux.registro.addLast(y);break;}
-                
                 } 
                a++;
             }
             result.add(aux);
-            
         }
-        
         return result;
     }
     
