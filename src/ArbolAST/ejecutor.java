@@ -38,6 +38,8 @@ public class ejecutor {
     public LinkedList< HashMap<String,variable>> ambito;
     public boolean retorno;
     public boolean continuar;
+    public boolean detener;
+    Object val_retorno=null;
     
     
     public ejecutor() {
@@ -84,8 +86,14 @@ public class ejecutor {
             case "PROCEDIMIENTO":
                 crearProcedimiento(raiz);
                 break;
+            case "FUNCION":
+                crearFuncion(raiz);
+                break;
             case "CALL_FUN":
                 ejecutarLLamada(raiz);
+                break;
+            case "IMPRIMIR":
+                ejecutarImprimir(raiz);
                 break;
         }
     }
@@ -154,6 +162,13 @@ public class ejecutor {
         String nombre = raiz.hijos.get(1).nombre;
 
         boolean fl = true;
+        if(tipo.equals("ID")){
+            tipo = raiz.hijos.get(0).hijos.get(0).nombre;
+            if(!actual.Objetos.containsKey(tipo)){
+                Control.agregarError(new errores(1, "NO EXISTE EL OBJECTO PARA INSTANCIAR: "+tipo, raiz));
+                return false;
+            }
+        }
         for (atributos a : tl.atributos) {
             if (a.nombre.equals(nombre)) {
                 fl = false;
@@ -378,7 +393,7 @@ public class ejecutor {
         
         if(actual!=null){
             if(!actual.procs.containsKey(nombre)){
-                procedimientos pr = new procedimientos(nombre);
+                procedimientos pr = new procedimientos("PROC",nombre);
                 if(raiz.hijos.size()==3){
                     pr.params=raiz.hijos.get(1);
                     pr.sentencias=raiz.hijos.get(2);
@@ -396,14 +411,42 @@ public class ejecutor {
 
     private Object ejecutarLLamada(Nodo raiz) {
         String nombre=raiz.hijos.get(0).nombre;
+        val_retorno =null;
         if(raiz.hijos.size()==2){
-            
+            return retornarFuncionConParametros(raiz);
         }else{
             procedimientos pr = actual.procs.get(nombre);
-            //para probar aqui 
-            sentenciasUSQL(pr.sentencias);
+            if(pr!=null){
+                aumentarAmbito();
+                for(Nodo s:pr.sentencias.hijos){
+                    if(retorno)
+                        break;
+                    sentenciasUSQL(s);
+                }
+                disminuirAmbito();
+            }else
+                Control.agregarError(new errores(1,"NO EXISTE EL METODO/FUNCION: "+nombre,raiz));
         }
-        return null;
+        return val_retorno;//aqui va return null
+    }
+    
+    private Object retornarFuncionConParametros(Nodo raiz){
+        String nombre=raiz.hijos.get(0).nombre;
+        procedimientos pr = actual.procs.get(nombre);
+        val_retorno=null;
+        if(pr!=null){
+            if(comprobarParametros(pr.params,raiz.hijos.get(1))){
+                for(Nodo s:pr.sentencias.hijos){
+                    if(retorno)
+                        break;
+                    sentenciasUSQL(s);
+                }
+            disminuirAmbito();//porque se ejecuto el metodo
+            }else
+                Control.agregarError(new errores(1,"Los parametros no son los correctos: "+nombre,raiz));
+        }else
+                Control.agregarError(new errores(1,"NO EXISTE EL METODO/FUNCION: "+nombre,raiz));
+        return val_retorno;
     }
     
    /**********SENTENCIAS USQL**********/
@@ -438,6 +481,24 @@ public class ejecutor {
             case "PARA":
                 ejecutarFOR(raiz);
                 break;
+            case "DECLARAR":
+                if(raiz.hijos.size()==2)
+                    ejecutarDeclarar(raiz);
+                else
+                    ejecutarDeclararAsignar(raiz);
+                break;
+            case "ASIGNACION":
+                ejecutarAsignacion(raiz);
+                break;
+            case "IMPRIMIR":
+                ejecutarImprimir(raiz);
+                break;
+            case "RETORNO":
+                evaluarRetorno(raiz);
+                break;
+            case "INSTANCIAR":
+                ejecutarInstancia(raiz);
+                break;
                     
         }
     }
@@ -471,12 +532,12 @@ public class ejecutor {
                             nuevo.fk=r.fk;
                             valores.addLast(nuevo);
                         } else {
-                            fl = false;
-                            break;
+                            Control.agregarError(new errores(1, "El valor a asignar a la variable no es del mismo tipo: "+res, raiz));
+                            return;
                         }
                     } else {
-                        fl = false;
-                        break;
+                       Control.agregarError(new errores(1, "El valor a asignar a la variable arroja como resultado null ", raiz));
+                       return;
                     }
                     a++;
                 }
@@ -496,7 +557,7 @@ public class ejecutor {
         
         for(int a=0;a<valores.size();a++){
             atributos atr=valores.get(a);
-            nodo_tabla nodo= new nodo_tabla(atr.tipo,atr.nombre, atr.valor);
+            nodo_tabla nodo= new nodo_tabla(atr.tipo,atr.nombre, atr.valor,aux.nombre);
             if(aux.atributos.get(a).primary_key){
              if(buscarPrimary(aux.registros, valores.get(a))){
                     //no existe este registro
@@ -621,10 +682,10 @@ public class ejecutor {
             if (nodo.hijos.size()==1)
             {
                 String termino = nodo.nombre;
-                switch (termino)
+                switch (termino.toUpperCase())
                 {
                     //case "EXP":     return evaluarEXPRESION(nodo.hijos.get(0));
-                    case "id":      return evaluarID(nodo.hijos.get(0));
+                    case "ID":      return evaluarID(nodo.hijos.get(0));
                     case "ID_ATR":  return evaluarID(nodo.hijos.get(0));
                     case "NOT":     return evaluarNOT(nodo.hijos.get(0));
                     case "NUM":     return evaluarNUMERO(nodo.hijos.get(0));
@@ -639,7 +700,6 @@ public class ejecutor {
             return 1;
         }
 
-   
     /************************** seccion insertado especial ***********/
     
     private void insertarEspecial(Nodo raiz) {
@@ -828,7 +888,7 @@ public class ejecutor {
         switch(tipo.toUpperCase()){
             case "DATE" :
                 try {
-                DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                DateFormat format = new SimpleDateFormat("yyyy-MM-dd");//ver si es alreves el formato
                 Date date = format.parse(String.valueOf(valor)); 
                     return date;
                 } catch (ParseException e) {
@@ -852,16 +912,23 @@ public class ejecutor {
                      Double tmp=Double.parseDouble(valor.toString());
                      return tmp.intValue();
                 } catch (NumberFormatException e) {
-                    System.out.println("No se puede convertir a integer"+ e.getMessage());
+                    Control.agregarError(new errores("SEMANTICO","No se puede convertir a integer"+ e.getMessage(),0,0));
                     return null;
                 }
                 case "DOUBLE":
                 try {
                      return Double.parseDouble(String.valueOf(valor));
                 } catch (NumberFormatException e) {
-                    System.out.println("No se puede convertir a double"+ e.getMessage());
+                    Control.agregarError(new errores("SEMANTICO","No se puede convertir a double"+ e.getMessage(),0,0));
                     return null;
                 }
+                default:
+                    if(valor instanceof Objetos){
+                        Objetos aux =(Objetos)valor;
+                        variable var = retornarVariable(aux.nombre);
+                        if(var.tipo.equals(tipo))
+                            return valor;
+                    }
         }
         return null;
     }
@@ -1455,8 +1522,187 @@ public class ejecutor {
     }
 
     private void realizarAumento(String var, Nodo aumento) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            variable aux = lista_actual.get(var);
+            int val =(int)aux.valor;
+            if(aumento.nombre.equals("++"))
+                val = val +1;
+            else
+                val = val-1;
+            aux.valor=val;
+        } catch (Exception e) {
+            Control.agregarError(new errores("SEMANTICO","error al realizar el aumento en for",aumento.fila,aumento.columna));
+        }
+        
     }
+
+    private void ejecutarDeclarar(Nodo raiz) {
+        String tipo = raiz.hijos.get(0).nombre;
+        Nodo variables = raiz.hijos.get(1);
+        
+        for(Nodo r:variables.hijos){
+            variable aux = new variable(tipo, r.nombre, null);
+            agregarVariable(tipo, aux);
+        }
+        
+    }
+
+    private void ejecutarDeclararAsignar(Nodo raiz) {
+        String tipo = raiz.hijos.get(0).nombre;
+        Nodo variables = raiz.hijos.get(1);
+        Object val = evaluarEXPRESION(raiz.hijos.get(2));
+        
+        if (val != null) {
+            int type = retornarNombreTipo(tipo);
+            val = castear(tipo, val);
+            if(retornarTipo(val)==type){
+               for (Nodo r : variables.hijos) {
+                variable aux = new variable(tipo, r.nombre, val);
+                agregarVariable(r.nombre, aux);
+                } 
+            }else
+                Control.agregarError(new errores("SEMANTICO","no son del mismo tipo para asginacion",raiz.fila,raiz.columna));
+        }
+        else
+            Control.agregarError(new errores("SEMANTICO","La evaluacion de valor a asignar es nulo",raiz.fila,raiz.columna));
+    }
+    
+    private void agregarVariable(String nombre,variable var){
+        if(!lista_actual.containsKey(nombre)){
+            lista_actual.put(nombre, var);
+        }else{
+            Control.agregarError(new errores("SEMANTICO","Ya existe la variable: "+nombre+", en el ambitoActual",0,0));
+        }
+    }
+    
+    private int retornarNombreTipo(String nombre){
+        switch (nombre.toUpperCase()) {
+            case "TEXT":
+                return 1;
+            case "DOUBLE":
+                return 2;
+            case "NUMBER":
+                return 3;
+            case "DATE":
+                
+            case "DATETIME":
+                return 4;
+            case "BOOL":
+                return 5;
+            //FALTA CUANDO SON OBJETOS O BOOLEANOS
+        }
+        return -1; 
+        
+    }
+
+    private void ejecutarAsignacion(Nodo raiz) {
+       String nombre = raiz.hijos.get(0).nombre;
+       Object val = evaluarEXPRESION(raiz.hijos.get(1));
+       variable aux = retornarVariable(nombre);
+       if(aux!=null){
+           if(val!=null){
+               val=castear(aux.tipo, val);
+               if(val!=null){
+                   aux.valor=val;//se realizo la asignacion =D
+               }else
+                  Control.agregarError(new errores("SEMANTICO","El valor de la asginacion no es del mismo tipo: "+aux.tipo,raiz.fila,raiz.columna));
+           }else
+                  Control.agregarError(new errores("SEMANTICO","El valor de la asginacion arrojo valor nulo",raiz.fila,raiz.columna));
+       }else
+           Control.agregarError(new errores("SEMANTICO","No existe variable: "+nombre,raiz.fila,raiz.columna));
+    }
+    
+    private variable retornarVariable(String nombre){
+        for(HashMap<String,variable> l : ambito){
+            if(l.containsKey(nombre))
+                return l.get(nombre);
+        }
+        return null;
+    }
+
+    private boolean comprobarParametros(Nodo params, Nodo valores) {
+        if(params.hijos.size()!=valores.hijos.size())
+            return false;
+        int a=0;
+        LinkedList<variable> lista_valores= new LinkedList<>();
+        for(Nodo x:valores.hijos){ //vamos a probar a ejecutar esta vaina
+            Nodo parametro= params.hijos.get(a);
+            String tipo=parametro.hijos.get(0).nombre;
+            String nombre=parametro.hijos.get(1).nombre;
+            Object val= evaluarEXPRESION(x);
+            val=castear(tipo, val);
+            if(val!=null){
+                lista_valores.addLast(new variable(tipo, nombre, val));
+            }else
+                return false;
+            a++;
+        }
+        //aumento el ambito para ejecutar el metodo o funcion
+        aumentarAmbito();
+        for(variable v:lista_valores)//llenamos todas las nuevas variables
+            agregarVariable(v.nombre,v);
+        return true;
+    }
+
+    private void crearFuncion(Nodo raiz) {
+        String nombre = raiz.hijos.get(0).nombre;
+        
+        if(actual!=null){
+            if(!actual.procs.containsKey(nombre)){
+                procedimientos pr = new procedimientos("FUNC",nombre);
+                if(raiz.hijos.size()==4){
+                    String tipo = raiz.hijos.get(1).nombre;
+                    if(tipo.equals("ID"))
+                        tipo=raiz.hijos.get(1).hijos.get(0).nombre;
+                    pr.retorno=tipo;
+                    pr.params=raiz.hijos.get(2);
+                    pr.sentencias=raiz.hijos.get(3);
+                    //vienen parametros
+                }else{
+                    //no trae parametros
+                    String tipo = raiz.hijos.get(1).nombre;
+                    if(tipo.equals("ID"))
+                        tipo=raiz.hijos.get(1).hijos.get(0).nombre;
+                    pr.sentencias=raiz.hijos.get(2);
+                    pr.retorno=tipo;
+                }
+                actual.procs.put(nombre,pr);
+            }
+            else
+                Control.agregarError(new errores("SEMANTICO", "YA EXISTE PROCEDIMIENTO/FUNCION con el nombre: "+nombre, raiz.fila, raiz.columna));
+        }
+    }
+
+    private void ejecutarImprimir(Nodo raiz) {
+       Object res = evaluarEXPRESION(raiz.hijos.get(0));
+       if(res!=null)
+            System.out.println(res);
+       else
+           Control.agregarError(new errores(1, "No se puede imprimir, evaluacion fue nula", raiz));
+    }
+
+    private void evaluarRetorno(Nodo raiz) {
+        val_retorno = evaluarEXPRESION(raiz.hijos.get(0));
+        retorno= true;
+        return;
+    }
+
+    private void ejecutarInstancia(Nodo raiz) {
+        String nombre =raiz.hijos.get(0).hijos.get(0).nombre;
+        Nodo variables = raiz.hijos.get(1);
+        Objetos instancia = actual.Objetos.get(nombre);
+        if(instancia!=null){
+            for(Nodo s:variables.hijos){
+                Objetos f = new Objetos(nombre);
+                f=(Objetos)instancia.clone();
+                f.nombre=s.nombre;
+                variable var = new variable(nombre, s.nombre, f);
+                agregarVariable(s.nombre, var);
+            }
+        }else
+            Control.agregarError(new errores(1,"No existe objeto: "+nombre+", para instanciar",raiz));
+    }
+    
     
     
 }//fin clase ejecutor

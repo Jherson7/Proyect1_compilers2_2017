@@ -6,7 +6,7 @@ import java.util.HashMap;
  *
  * @author Jherson Sazo
  */
-public class Objetos {
+public class Objetos implements Cloneable{
     public String nombre;
     public HashMap<String,usuario> users;
     public HashMap<String,Atributos_Obj> atributos;
@@ -23,5 +23,14 @@ public class Objetos {
         this.atributos =new HashMap<>();
     }
     
+        @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            throw new Error("Something impossible just happened");
+        }
+    }
     
 }

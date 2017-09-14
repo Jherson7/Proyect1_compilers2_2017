@@ -2,6 +2,7 @@ options {
 //LOOKAHEAD=1;
 STATIC = false;
 IGNORE_CASE=true;
+
 } 
 
 PARSER_BEGIN(Sintactico)
@@ -174,7 +175,7 @@ TOKEN :
 | <TRUE: "verdadero">
 | < IDEN: ["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
 
-| <CADENA: "\""(~["\"","\n","\t"])* "\"">
+
 | <DATE_EXP: "'" <DIA>["-"] <MES> ["-"] <ANIO> "'">
 | <#DIA: ((["0"])?["1"-"9"]|["1"-"3"]["0"-"9"])>
 | <#MES: ((["0"])?["1"-"9"]|"10"|"11"|"12")>
@@ -183,6 +184,7 @@ TOKEN :
 | <#HOUR: (((["0"])?["0"-"9"]|["1"-"2"]["0"-"9"])":"(["0"-"6"]["0"-"9"])":"(["0"-"6"]["0"-"9"]))>
 | <CARACTER: <VAL_CARAC> >
 | < #VAL_CARAC: "'" (("^"["n","t","r","^","'","\""])|(~["\\","\n","\t","\r","'"]))+"'"  >
+| <CADENA: "\""(~["\"","\n","\t"])* "\"">
 }
 
 
@@ -197,12 +199,20 @@ Nodo Inicio():
 }
 
 Nodo Sentencias_Padre():
-{Nodo raiz; Token v;}
+{Nodo raiz,parametros,aux; Token v;}
 {
    <CREAR>  raiz = Sentencias_Crear()  	{return raiz;}
  | <USAR> v=<IDEN> <ptc>  				{return new Nodo("USAR",v.beginLine,v.beginColumn,v.image);}
- |
-  raiz = Llamada_funcion() 		<ptc>	{return raiz;} 
+ |v=<IDEN> <apar> 
+	  
+	 	{	raiz=new Nodo("CALL_FUN",v.beginLine,v.beginColumn,v.image);
+	 	  	parametros=new Nodo("PARAMETROS",0,0); }
+				
+	    (aux=Rel_Or(){parametros.hijos.addLast(aux);}
+		(<coma> aux=Rel_Or(){parametros.hijos.addLast(aux);})* {raiz.hijos.addLast(parametros);} )?
+		
+	<cpar> 
+  		<ptc>	{return raiz;} //raiz = Llamada_funcion() 
 }
 
 Nodo Sentencias_Crear():
@@ -300,18 +310,18 @@ Nodo Sentencias_Procedimiento()://metodo para crear procedimiento
 }
 
 Nodo Sentencias_Funcion()://metodo para crear procedimiento
-{Nodo raiz,parametros,p,sentencias;Token t;}
+{Nodo raiz,parametros,p,sentencias,tipo;Token t;}
 {
 	{parametros= new Nodo("PARAMETROS",0,0);}
 	{sentencias= new Nodo("SENTENCIAS",0,0);}
 	t=<IDEN> {raiz=new Nodo("FUNCION",t.beginLine,t.beginColumn,t.image);}
 	<apar> 
 	(p=Parametros(){parametros.hijos.addLast(p);}(<coma>p=Parametros(){parametros.hijos.addLast(p);})* {raiz.hijos.addLast(parametros);})? 
-    <cpar> t=<IDEN> 
+    <cpar> tipo=Tipo_Var()
     <alla>(p= Sentencias_Usql() {sentencias.hijos.addLast(p);})+ <clla>
 	
 	{
-	 	raiz.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));
+	 	raiz.hijos.addLast(tipo);
 	 	raiz.hijos.addLast(sentencias); 
 	 	return raiz;
 	 }
@@ -441,9 +451,9 @@ Nodo Sentencias_Seleccionar():
      {l_campos = new Nodo("lista_campos",0,0);}
      {l_tablas = new Nodo("lista_tablas",0,0);}
 
-     v=<IDEN> {l_campos.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));}
+     r=Llamada_funcion() {l_campos.hijos.addLast(r);}
 
-     (<coma> v=<IDEN>{l_campos.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));})* 
+     (<coma> r=Llamada_funcion(){l_campos.hijos.addLast(r);})* 
 
      <DE> v=<IDEN> {l_tablas.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));}
 
@@ -584,23 +594,34 @@ Nodo Retornar():
 
 
 Nodo Llamada_funcion():
-{Nodo raiz,parametros,aux;Token t;}
+{Nodo raiz,parametros,aux;Token t,v;}
 {
 	
-	t=<IDEN> 
+	t=<IDEN>  raiz= auxFun(t.image,t.beginLine,t.beginColumn) {return raiz;}
 
-	{parametros=new Nodo("PARAMETROS",0,0);
-	 raiz=new Nodo("CALL_FUN",t.beginLine,t.beginColumn,t.image);
-	 }
-	<apar> 
-		(		aux=Rel_Or(){parametros.hijos.addLast(aux);}
-		(<coma> aux=Rel_Or(){parametros.hijos.addLast(aux);})* {raiz.hijos.addLast(parametros);} )? 
-	<cpar>
+}
 
-	{
+Nodo auxFun(String nombre,int fila,int columna):
+{Token v;Nodo raiz,parametros,aux;}
+{
+	 <punto> v=<IDEN> 
 	 
-	 return raiz;
-	}
+	 {raiz= new Nodo("ACCESO_OBJETO",fila,columna,nombre,v.image);}
+	 
+	 (<punto> <IDEN> {raiz.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));} )?
+	 {return raiz;}
+
+	|<apar> 
+	  
+	 	{	raiz=new Nodo("CALL_FUN",fila,columna,nombre);
+	 	  	parametros=new Nodo("PARAMETROS",0,0); }
+				
+	    (aux=Rel_Or(){parametros.hijos.addLast(aux);}
+		(<coma> aux=Rel_Or(){parametros.hijos.addLast(aux);})* {raiz.hijos.addLast(parametros);} )?
+		
+	<cpar> 
+	{return raiz;}
+	| {return new Nodo("ID_ATR",fila,columna);}
 }
 
 Nodo Ciclo_While():
@@ -744,24 +765,26 @@ Nodo Declaracion():
 
      t=<DECLARAR> aux=Variables(){variables.hijos.addLast(aux);}
      (<coma> aux=Variables(){variables.hijos.addLast(aux);})* 
-     tipo=Tipo_Var() <ASIG> aux= Rel_Or()
+     
+     tipo=Tipo_Var() 
      {
      	raiz=new Nodo("DECLARAR",t.beginLine,t.beginColumn);
      	if(tipo.nombre=="ID")
      		raiz.nombre="INSTANCIAR";
      	raiz.hijos.addLast(tipo);
      	raiz.hijos.addLast(variables);
-     	raiz.hijos.addLast(aux);
+     	
  	 }
+ 	 (<ASIG> aux= Rel_Or() {raiz.hijos.addLast(aux);})?
 
-    {return raiz;} 
+     {return raiz;} 
 }
 
 Nodo Variables(): 
 {Token v;}
 {
 
-   <key> v=<IDEN> {return new Nodo("ID",v.beginLine,v.beginLine,v.image);}
+   <key> v=<IDEN> {return new Nodo(v.image,v.beginLine,v.beginLine);}
 }
 
 Nodo Rel_Or():
@@ -785,9 +808,10 @@ Nodo Rel_And():
 Nodo Rel_Not():
 {Nodo uno,dos,raiz;}
 {
-      raiz= Relacional()  		{return raiz;}
-    | <NOT> uno= Relacional()  {raiz = new Nodo("NOT",uno);}
-    {return raiz;}
+      
+     <NOT> uno= Rel_Not()      {raiz = new Nodo("NOT",uno); return raiz;}
+    |raiz= Relacional()  		{return raiz;}
+    
 }
 
 
@@ -837,36 +861,46 @@ Nodo Potencia():
 	{return raiz;}
 }
 
+/*
+Nodo Unario():
+{Nodo raiz,r;}
+{
+    <menos> r=Rel_Or() {}
+   | raiz = Expresion() {return raiz;}
+}*/
+
+
+
 
 Nodo Expresion(): 
 {Nodo r,s,v;Token t;}
 {
-	   <key> t=<IDEN> 	{return new Nodo("ID",t.beginLine,t.beginColumn,t.image);}
-	| t=<IDEN> 			{return new Nodo("ID_ATR",t.beginLine,t.beginColumn,t.image);}
-	| t=<NUM> 			{return new Nodo("NUM",t.beginLine,t.beginColumn,t.image);}
-  	| t=<FALSE> 		{return new Nodo("FALSE",t.beginLine,t.beginColumn,t.image);}
-	| t=<TRUE>			{return new Nodo("TRUE",t.beginLine,t.beginColumn,t.image);}
-  	| t=<CARACTER> 		{return new Nodo("TEXT",t.beginLine,t.beginColumn,t.image);}
- 	| t=<CADENA>    	{return new Nodo("STRING",t.beginLine,t.beginColumn,t.image);}
-	| t=<DATE_EXP>  	{return new Nodo("DATE",t.beginLine,t.beginColumn,t.image);}
-	| t=<DATE_TIME_EXP> {return new Nodo("DATE TIME",t.beginLine,t.beginColumn,t.image);}
-	
-
+	  <key> t=<IDEN> 		{return new Nodo("ID",t.beginLine,t.beginColumn,t.image);}
+	| <menos> r=Expresion()	{return new Nodo("UNARIO",r);}
+	| t=<DATE_EXP>  		{return new Nodo("DATE",t.beginLine,t.beginColumn,t.image);}
+	| t=<DATE_TIME_EXP> 	{return new Nodo("DATE TIME",t.beginLine,t.beginColumn,t.image);}
+	| t=<NUM> 				{return new Nodo("NUM",t.beginLine,t.beginColumn,t.image);}
+  	| t=<FALSE> 			{return new Nodo("FALSE",t.beginLine,t.beginColumn,t.image);}
+	| t=<TRUE>				{return new Nodo("TRUE",t.beginLine,t.beginColumn,t.image);}
+  	| t=<CARACTER> 			{return new Nodo("TEXT",t.beginLine,t.beginColumn,t.image);}
+ 	| t=<CADENA>    		{return new Nodo("STRING",t.beginLine,t.beginColumn,t.image);}
+ 	//| <NOT> uno= Rel_Not()  {raiz = new Nodo("NOT",uno); return raiz;}
+	| r= Llamada_funcion()	{return r;}
+ 	| <apar> r=Rel_Or() <cpar> {return r;}
 }
 
 Nodo Tipo_Var():
-{String raiz;}
+{String raiz;Nodo r;}
 { 
- <BOOL>		{return new Nodo("BOOL",token.beginLine,token.beginColumn);}
-|<CHAR>		{return new Nodo("CHAR",token.beginLine,token.beginColumn);}
-|<INTEGER>	{return new Nodo("INTEGER",token.beginLine,token.beginColumn);}
-|<TEXT>		{return new Nodo("TEXT",token.beginLine,token.beginColumn);}
-|<CARACTER> {return new Nodo("TEXT",token.beginLine,token.beginColumn);}
-|<DOUBLE>	{return new Nodo("DOUBLE",token.beginLine,token.beginColumn);}
-|<VACIO>	{return new Nodo("VACIO",token.beginLine,token.beginColumn);}
-|<DATE>     {return new Nodo("DATE",token.beginLine,token.beginColumn);}
-|<DATETIME> {return new Nodo("DATETIME",token.beginLine,token.beginColumn);}
-|<IDEN>   	{return new Nodo("ID",token.beginLine,token.beginColumn,token.image);}
-|<NULO>     {return new Nodo("NULO",token.beginLine,token.beginColumn,token.image);}
+ <BOOL>					{return new Nodo("BOOL",token.beginLine,token.beginColumn);}
+|<DATE>     			{return new Nodo("DATE",token.beginLine,token.beginColumn);}
+|<DATETIME> 			{return new Nodo("DATETIME",token.beginLine,token.beginColumn);}
+|<CHAR>					{return new Nodo("CHAR",token.beginLine,token.beginColumn);}
+|<INTEGER>				{return new Nodo("INTEGER",token.beginLine,token.beginColumn);}
+|<TEXT>					{return new Nodo("TEXT",token.beginLine,token.beginColumn);}
+|<CARACTER> 			{return new Nodo("TEXT",token.beginLine,token.beginColumn);}
+|<DOUBLE>				{return new Nodo("DOUBLE",token.beginLine,token.beginColumn);}
+|<IDEN>   				{return new Nodo("ID",token.beginLine,token.beginColumn,token.image);}
+|<NULO>     			{return new Nodo("NULO",token.beginLine,token.beginColumn,token.image);}
 
 }

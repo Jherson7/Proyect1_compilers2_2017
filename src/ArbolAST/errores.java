@@ -22,6 +22,14 @@ public class errores {
         this.col = col;
     }
     
-    
+    public errores(int tipo, String descripcion,Nodo raiz) {
+       switch(tipo){
+           case 1:
+               this.tipo="SEMANTICO";
+               this.descripcion=descripcion;
+               this.linea = raiz.fila;
+               this.col=raiz.columna;
+       }
+    }
     
 }

@@ -197,23 +197,23 @@ public interface SintacticoConstants {
   /** RegularExpression Id. */
   int IDEN = 98;
   /** RegularExpression Id. */
-  int CADENA = 99;
+  int DATE_EXP = 99;
   /** RegularExpression Id. */
-  int DATE_EXP = 100;
+  int DIA = 100;
   /** RegularExpression Id. */
-  int DIA = 101;
+  int MES = 101;
   /** RegularExpression Id. */
-  int MES = 102;
+  int ANIO = 102;
   /** RegularExpression Id. */
-  int ANIO = 103;
+  int DATE_TIME_EXP = 103;
   /** RegularExpression Id. */
-  int DATE_TIME_EXP = 104;
+  int HOUR = 104;
   /** RegularExpression Id. */
-  int HOUR = 105;
+  int CARACTER = 105;
   /** RegularExpression Id. */
-  int CARACTER = 106;
+  int VAL_CARAC = 106;
   /** RegularExpression Id. */
-  int VAL_CARAC = 107;
+  int CADENA = 107;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -319,7 +319,6 @@ public interface SintacticoConstants {
     "\"falso\"",
     "\"verdadero\"",
     "<IDEN>",
-    "<CADENA>",
     "<DATE_EXP>",
     "<DIA>",
     "<MES>",
@@ -328,6 +327,7 @@ public interface SintacticoConstants {
     "<HOUR>",
     "<CARACTER>",
     "<VAL_CARAC>",
+    "<CADENA>",
     "\"<<\"",
     "\">>\"",
   };
