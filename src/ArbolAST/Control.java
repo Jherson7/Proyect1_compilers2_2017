@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -36,7 +37,7 @@ public class Control {
    private static HashMap<String,usuario> usuarios;
    private static LinkedList<errores> lista_error;
    public static boolean levante=true;
-   
+   public static String[] cadena;
    
    public static void iniciar(){
        if(bases==null)
@@ -185,5 +186,21 @@ public class Control {
     public static void imprimirErrores(){
         for(errores r:lista_error)
             System.out.println(r.tipo+ ", "+r.descripcion+ ", "+r.linea+", "+r.col);
+        
+          for (Map.Entry<String,bd> entry : bases.entrySet()) {
+                    bd aux = (bd)entry.getValue();
+                    System.out.println("Vamos a ver la bitacora:DDD");
+                    System.out.println(aux.bitacora);
+                    System.out.println("*****************************");
+                }
+    }
+
+    public static void splitCadena(String cad){
+        cadena=cad.split("\n");
+        System.out.println("Ajua");
+    }
+    
+    public static String[]retonarCadena(){
+        return cadena;
     }
 }

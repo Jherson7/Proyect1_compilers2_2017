@@ -199,11 +199,11 @@ Nodo Inicio():
 }
 
 Nodo Sentencias_Padre():
-{Nodo raiz,parametros,aux; Token v;}
+{Nodo raiz,parametros,aux; Token v,i,f;}
 {
-   <CREAR>  raiz = Sentencias_Crear()  	{return raiz;}
- | <USAR> v=<IDEN> <ptc>  				{return new Nodo("USAR",v.beginLine,v.beginColumn,v.image);}
- |v=<IDEN> <apar> 
+   i=<CREAR>  raiz = Sentencias_Crear()  	{raiz.setInicio(i.beginLine); return raiz;}
+ | i=<USAR> v=<IDEN> f=<ptc>  				{raiz =new Nodo("USAR",v.beginLine,v.beginColumn,v.image); raiz.setInicio(i.beginLine); raiz.setFin(f.beginLine); return raiz;}
+ | v=<IDEN> <apar> 
 	  
 	 	{	raiz=new Nodo("CALL_FUN",v.beginLine,v.beginColumn,v.image);
 	 	  	parametros=new Nodo("PARAMETROS",0,0); }
@@ -212,27 +212,28 @@ Nodo Sentencias_Padre():
 		(<coma> aux=Rel_Or(){parametros.hijos.addLast(aux);})* {raiz.hijos.addLast(parametros);} )?
 		
 	<cpar> 
-  		<ptc>	{return raiz;} //raiz = Llamada_funcion() 
+  		<ptc>	{raiz.setInicio(v.beginLine); raiz.setFin(v.beginColumn); return raiz;} //raiz = Llamada_funcion() 
 }
 
 Nodo Sentencias_Crear():
-{Nodo raiz,sent,atr; Token v;}
+{Nodo raiz,sent,atr; Token v,f;}
 {
-     <BASE_DATOS> v=<IDEN>  <ptc>  { raiz = new Nodo("BASE_DATOS",v.beginLine,v.beginColumn,v.image); return raiz;}
-    |<TABLA> 		 raiz = Sentencias_Tabla()   		<ptc> {return raiz;}
-    |<USUARIO> 		 raiz = Crear_Usuario() 			<ptc> {return raiz;}//esto es nuevo
-    |<PROCEDIMIENTO> raiz = Sentencias_Procedimiento()        {return raiz;}
-    |<FUNCION>	     raiz = Sentencias_Funcion() 			  {return raiz;}
-    |<OBJECTO> v=<IDEN> 
+     <BASE_DATOS> v=<IDEN>  f=<ptc>  { raiz = new Nodo("BASE_DATOS",v.beginLine,v.beginColumn,v.image); raiz.setFin(f.beginLine); return raiz;}
+    |v=<TABLA> 		 		raiz = Sentencias_Tabla()   			f=<ptc> { raiz.setFin(f.beginLine); return raiz;}
+    |v=<USUARIO> 		 	raiz = Crear_Usuario() 					f=<ptc> { raiz.setFin(f.beginLine); return raiz;}
+    |v=<PROCEDIMIENTO> 		raiz = Sentencias_Procedimiento()        		{ return raiz;}
+    |v=<FUNCION>	     	raiz = Sentencias_Funcion() 			  		{ return raiz;}
+    |  <OBJECTO> v=<IDEN> 
 
       <apar> 
 
      { raiz = new Nodo("OBJECTO",v.beginLine,v.beginColumn,v.image); }
      { atr = new Nodo("ATRIBUTOS",v.beginLine,v.beginColumn); }
      (sent = Sentencias_Objeto(){atr.hijos.addLast(sent);} (<coma>sent = Sentencias_Objeto(){atr.hijos.addLast(sent);})*)+ 
-     <cpar> <ptc> 
+     <cpar> f=<ptc> 
     
     {   raiz.hijos.addLast(atr);
+    	raiz.setFin(f.beginLine);
     	return raiz;
     } 
 
@@ -246,7 +247,7 @@ Nodo Crear_Usuario():
 }
 
 Nodo Sentencias_Tabla():
-{Nodo raiz,sent,atributos; Token v;}
+{Nodo raiz,sent,atributos; Token v,f;}
 {
      v=<IDEN> {raiz=new Nodo("TABLA",v.beginLine,v.beginColumn,v.image);}
      {atributos=new Nodo("ATRIBUTOS",0,0);}
@@ -292,7 +293,7 @@ Nodo Caracteristicas():
 
 
 Nodo Sentencias_Procedimiento()://metodo para crear procedimiento
-{Nodo raiz,parametros,p,sentencias;Token t;}
+{Nodo raiz,parametros,p,sentencias;Token t,f;}
 {
 	{parametros= new Nodo("PARAMETROS",0,0);}
 	{sentencias= new Nodo("SENTENCIAS",0,0);}
@@ -301,16 +302,17 @@ Nodo Sentencias_Procedimiento()://metodo para crear procedimiento
 	(p=Parametros(){parametros.hijos.addLast(p);}(<coma>p=Parametros(){parametros.hijos.addLast(p);})* {raiz.hijos.addLast(parametros);})? 
 		    
     <cpar> 
-    <alla>(p= Sentencias_Usql() {sentencias.hijos.addLast(p);})+ <clla>
+    <alla>(p= Sentencias_Usql() {sentencias.hijos.addLast(p);})+ f=<clla>
 	
 	{
-	 	raiz.hijos.addLast(sentencias); 
+	 	raiz.hijos.addLast(sentencias);
+	 	raiz.setFin(f.beginLine);
 	 	return raiz;
 	 }
 }
 
 Nodo Sentencias_Funcion()://metodo para crear procedimiento
-{Nodo raiz,parametros,p,sentencias,tipo;Token t;}
+{Nodo raiz,parametros,p,sentencias,tipo;Token t,f;}
 {
 	{parametros= new Nodo("PARAMETROS",0,0);}
 	{sentencias= new Nodo("SENTENCIAS",0,0);}
@@ -318,11 +320,12 @@ Nodo Sentencias_Funcion()://metodo para crear procedimiento
 	<apar> 
 	(p=Parametros(){parametros.hijos.addLast(p);}(<coma>p=Parametros(){parametros.hijos.addLast(p);})* {raiz.hijos.addLast(parametros);})? 
     <cpar> tipo=Tipo_Var()
-    <alla>(p= Sentencias_Usql() {sentencias.hijos.addLast(p);})+ <clla>
+    <alla>(p= Sentencias_Usql() {sentencias.hijos.addLast(p);})+ f=<clla>
 	
 	{
 	 	raiz.hijos.addLast(tipo);
 	 	raiz.hijos.addLast(sentencias); 
+	 	raiz.setFin(f.beginLine);
 	 	return raiz;
 	 }
 }
@@ -727,10 +730,10 @@ Nodo IF():
 }
 
 Nodo Imprimir():
-{Nodo raiz,sent; Token t;}
+{Nodo raiz,sent; Token t,f;}
 {
-	t=<IMPRIMIR> <apar> Rel_Or() <cpar>
-	{ raiz = new Nodo("IMPRIMIR",t.beginLine,t.beginColumn);}
+	t=<IMPRIMIR> <apar> Rel_Or() f=<cpar>
+	{ raiz = new Nodo("IMPRIMIR",t.beginLine,t.beginColumn); raiz.setInicio(t.beginLine); raiz.setFin(f.beginLine);}
 	{return raiz;}
 }
 

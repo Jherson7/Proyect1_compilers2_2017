@@ -66,6 +66,7 @@ public class Principal extends javax.swing.JFrame {
         Nodo raiz;
         if(!jTextArea1.getText().isEmpty()){
             StringReader lectura = new StringReader(jTextArea1.getText());
+            Control.splitCadena(jTextArea1.getText());
             Sintactico ej=null;
             ej = new Sintactico(lectura);
             try {

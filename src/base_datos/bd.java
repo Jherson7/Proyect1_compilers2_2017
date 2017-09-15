@@ -20,7 +20,8 @@ public class bd {
     public HashMap<String,procedimientos> procs;
     public HashMap<String,funciones> func;
     public HashMap<String,Objetos> Objetos;
-
+    public String bitacora;
+    
     public bd(String nombre,String dir) {
         this.nombre=nombre;
         this.users= new HashMap<>();
@@ -29,6 +30,7 @@ public class bd {
         this.procs= new HashMap<>();
         this.Objetos = new HashMap<>();
         this.direccion     =dir;
+        this.bitacora="";
     }
     
     

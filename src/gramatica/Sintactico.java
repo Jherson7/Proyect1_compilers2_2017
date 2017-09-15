@@ -47,19 +47,19 @@ raiz.hijos.addLast(sent);
     throw new Error("Missing return statement in function");
   }
 
-  final public Nodo Sentencias_Padre() throws ParseException {Nodo raiz,parametros,aux; Token v;
+  final public Nodo Sentencias_Padre() throws ParseException {Nodo raiz,parametros,aux; Token v,i,f;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case CREAR:{
-      jj_consume_token(CREAR);
+      i = jj_consume_token(CREAR);
       raiz = Sentencias_Crear();
-{if ("" != null) return raiz;}
+raiz.setInicio(i.beginLine); {if ("" != null) return raiz;}
       break;
       }
     case USAR:{
-      jj_consume_token(USAR);
+      i = jj_consume_token(USAR);
       v = jj_consume_token(IDEN);
-      jj_consume_token(ptc);
-{if ("" != null) return new Nodo("USAR",v.beginLine,v.beginColumn,v.image);}
+      f = jj_consume_token(ptc);
+raiz =new Nodo("USAR",v.beginLine,v.beginColumn,v.image); raiz.setInicio(i.beginLine); raiz.setFin(f.beginLine); {if ("" != null) return raiz;}
       break;
       }
     case IDEN:{
@@ -106,7 +106,7 @@ raiz.hijos.addLast(parametros);
       }
       jj_consume_token(cpar);
       jj_consume_token(ptc);
-{if ("" != null) return raiz;}
+raiz.setInicio(v.beginLine); raiz.setFin(v.beginColumn); {if ("" != null) return raiz;}
       break;
       }
     default:
@@ -117,37 +117,37 @@ raiz.hijos.addLast(parametros);
     throw new Error("Missing return statement in function");
   }
 
-  final public Nodo Sentencias_Crear() throws ParseException {Nodo raiz,sent,atr; Token v;
+  final public Nodo Sentencias_Crear() throws ParseException {Nodo raiz,sent,atr; Token v,f;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case BASE_DATOS:{
       jj_consume_token(BASE_DATOS);
       v = jj_consume_token(IDEN);
-      jj_consume_token(ptc);
-raiz = new Nodo("BASE_DATOS",v.beginLine,v.beginColumn,v.image); {if ("" != null) return raiz;}
+      f = jj_consume_token(ptc);
+raiz = new Nodo("BASE_DATOS",v.beginLine,v.beginColumn,v.image); raiz.setFin(f.beginLine); {if ("" != null) return raiz;}
       break;
       }
     case TABLA:{
-      jj_consume_token(TABLA);
+      v = jj_consume_token(TABLA);
       raiz = Sentencias_Tabla();
-      jj_consume_token(ptc);
-{if ("" != null) return raiz;}
+      f = jj_consume_token(ptc);
+raiz.setFin(f.beginLine); {if ("" != null) return raiz;}
       break;
       }
     case USUARIO:{
-      jj_consume_token(USUARIO);
+      v = jj_consume_token(USUARIO);
       raiz = Crear_Usuario();
-      jj_consume_token(ptc);
-{if ("" != null) return raiz;}
+      f = jj_consume_token(ptc);
+raiz.setFin(f.beginLine); {if ("" != null) return raiz;}
       break;
       }
     case PROCEDIMIENTO:{
-      jj_consume_token(PROCEDIMIENTO);
+      v = jj_consume_token(PROCEDIMIENTO);
       raiz = Sentencias_Procedimiento();
 {if ("" != null) return raiz;}
       break;
       }
     case FUNCION:{
-      jj_consume_token(FUNCION);
+      v = jj_consume_token(FUNCION);
       raiz = Sentencias_Funcion();
 {if ("" != null) return raiz;}
       break;
@@ -197,8 +197,9 @@ atr.hijos.addLast(sent);
         }
       }
       jj_consume_token(cpar);
-      jj_consume_token(ptc);
+      f = jj_consume_token(ptc);
 raiz.hijos.addLast(atr);
+        raiz.setFin(f.beginLine);
         {if ("" != null) return raiz;}
       break;
       }
@@ -220,7 +221,7 @@ raiz.hijos.addLast(atr);
     throw new Error("Missing return statement in function");
   }
 
-  final public Nodo Sentencias_Tabla() throws ParseException {Nodo raiz,sent,atributos; Token v;
+  final public Nodo Sentencias_Tabla() throws ParseException {Nodo raiz,sent,atributos; Token v,f;
     v = jj_consume_token(IDEN);
 raiz=new Nodo("TABLA",v.beginLine,v.beginColumn,v.image);
 atributos=new Nodo("ATRIBUTOS",0,0);
@@ -319,7 +320,7 @@ raiz.hijos.addLast(features);
     throw new Error("Missing return statement in function");
   }
 
-  final public Nodo Sentencias_Procedimiento() throws ParseException {Nodo raiz,parametros,p,sentencias;Token t;
+  final public Nodo Sentencias_Procedimiento() throws ParseException {Nodo raiz,parametros,p,sentencias;Token t,f;
 parametros= new Nodo("PARAMETROS",0,0);
 sentencias= new Nodo("SENTENCIAS",0,0);
     t = jj_consume_token(IDEN);
@@ -394,13 +395,14 @@ sentencias.hijos.addLast(p);
         break label_8;
       }
     }
-    jj_consume_token(clla);
+    f = jj_consume_token(clla);
 raiz.hijos.addLast(sentencias);
+                raiz.setFin(f.beginLine);
                 {if ("" != null) return raiz;}
     throw new Error("Missing return statement in function");
   }
 
-  final public Nodo Sentencias_Funcion() throws ParseException {Nodo raiz,parametros,p,sentencias,tipo;Token t;
+  final public Nodo Sentencias_Funcion() throws ParseException {Nodo raiz,parametros,p,sentencias,tipo;Token t,f;
 parametros= new Nodo("PARAMETROS",0,0);
 sentencias= new Nodo("SENTENCIAS",0,0);
     t = jj_consume_token(IDEN);
@@ -476,9 +478,10 @@ sentencias.hijos.addLast(p);
         break label_10;
       }
     }
-    jj_consume_token(clla);
+    f = jj_consume_token(clla);
 raiz.hijos.addLast(tipo);
                 raiz.hijos.addLast(sentencias);
+                raiz.setFin(f.beginLine);
                 {if ("" != null) return raiz;}
     throw new Error("Missing return statement in function");
   }
@@ -1568,12 +1571,12 @@ raiz.hijos.addLast(sentencias);
     throw new Error("Missing return statement in function");
   }
 
-  final public Nodo Imprimir() throws ParseException {Nodo raiz,sent; Token t;
+  final public Nodo Imprimir() throws ParseException {Nodo raiz,sent; Token t,f;
     t = jj_consume_token(IMPRIMIR);
     jj_consume_token(apar);
     Rel_Or();
-    jj_consume_token(cpar);
-raiz = new Nodo("IMPRIMIR",t.beginLine,t.beginColumn);
+    f = jj_consume_token(cpar);
+raiz = new Nodo("IMPRIMIR",t.beginLine,t.beginColumn); raiz.setInicio(t.beginLine); raiz.setFin(f.beginLine);
 {if ("" != null) return raiz;}
     throw new Error("Missing return statement in function");
   }

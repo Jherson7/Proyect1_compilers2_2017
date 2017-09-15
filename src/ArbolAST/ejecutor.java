@@ -92,9 +92,13 @@ public class ejecutor {
                 break;
             case "CALL_FUN":
                 ejecutarLLamada(raiz);
+                for(int a=raiz.getInicio()-1; a<=raiz.getFin()-1;a++)
+                    actual.bitacora+=Control.cadena[a]+"\n";
                 break;
             case "IMPRIMIR":
                 ejecutarImprimir(raiz);
+                for(int a=raiz.getInicio()-1; a<=raiz.getFin()-1;a++)
+                    actual.bitacora+=Control.cadena[a]+"\n";
                 break;
         }
     }
@@ -105,6 +109,8 @@ public class ejecutor {
         
         if(base!=null){
             actual =base;
+         for(int a=raiz.getInicio()-1; a<=raiz.getFin()-1;a++)
+             actual.bitacora+=Control.cadena[a]+"\n";
         }
         //else agregar error y enviarlo
         
@@ -117,6 +123,9 @@ public class ejecutor {
         if(!Control.existeDB(nombre)){
                 bd nueva = new  bd(nombre,ruta);
                 Control.agregarBD(nueva);
+                String cadena[]=Control.retonarCadena();
+                for(int a=raiz.getInicio()-1; a<=raiz.getFin()-1;a++)
+                    nueva.bitacora+=cadena[a]+"\n";
         }
     }
     
@@ -124,7 +133,9 @@ public class ejecutor {
         String nombre = raiz.hijos.get(0).nombre;
         String pass = raiz.hijos.get(1).nombre;
         if(Control.agregarUsuario(new usuario(nombre,pass))){
-         //se agrego correctamente el usuario   
+         //se agrego correctamente el usuario 
+         for(int a=raiz.getInicio()-1; a<=raiz.getFin()-1;a++)
+             actual.bitacora+=Control.cadena[a]+"\n";
         }
         else{
             //no se agrego correctamente
@@ -136,6 +147,8 @@ public class ejecutor {
         //comprobar si hay tabla use
         if (actual != null) {
             if (!actual.tablas.containsKey(nombre)) {
+                for(int a=raiz.getInicio()-1; a<=raiz.getFin()-1;a++)
+                    actual.bitacora+=Control.cadena[a]+"\n";
                 tabla tl = new tabla(nombre,"falta agregarle la ruta de la tabla");
                 Nodo atributos = raiz.hijos.get(1);
                 boolean fl = true;
@@ -266,6 +279,8 @@ public class ejecutor {
         String nombre = raiz.hijos.get(0).nombre;
         if(actual!=null){
             if(!actual.Objetos.containsKey(nombre)){
+                for(int a=raiz.getInicio()-1; a<=raiz.getFin()-1;a++)
+                    actual.bitacora+=Control.cadena[a]+"\n";
                 Objetos obj = new Objetos(nombre);
                 boolean fl=true;
                 for(Nodo r:raiz.hijos.get(1).hijos){
@@ -394,6 +409,8 @@ public class ejecutor {
         
         if(actual!=null){
             if(!actual.procs.containsKey(nombre)){
+                for(int a=raiz.getInicio()-1; a<=raiz.getFin()-1;a++)
+                    actual.bitacora+=Control.cadena[a]+"\n";
                 procedimientos pr = new procedimientos("PROC",nombre);
                 if(raiz.hijos.size()==3){
                     pr.params=raiz.hijos.get(1);
@@ -505,6 +522,9 @@ public class ejecutor {
                 break;
             case "ASIGNACION_OBJETO":
                 ejecutarAsignacionObjecto(raiz);
+                break;
+            case "ACTUALIZAR_TABLA":
+                ejecutarActualizarTabla(raiz);
                 break;
                     
         }
@@ -1676,6 +1696,8 @@ public class ejecutor {
         
         if(actual!=null){
             if(!actual.procs.containsKey(nombre)){
+                for(int a=raiz.getInicio()-1; a<=raiz.getFin()-1;a++)//para agregar a la bitacora
+                    actual.bitacora+=Control.cadena[a]+"\n";
                 procedimientos pr = new procedimientos("FUNC",nombre);
                 if(raiz.hijos.size()==4){
                     String tipo = raiz.hijos.get(1).nombre;
@@ -1711,7 +1733,6 @@ public class ejecutor {
     private void evaluarRetorno(Nodo raiz) {
         val_retorno = evaluarEXPRESION(raiz.hijos.get(0));
         retorno= true;
-        return;
     }
 
     private void ejecutarInstancia(Nodo raiz) {
@@ -1788,6 +1809,103 @@ public class ejecutor {
             
         }
         return null;
+    }
+
+    private void ejecutarActualizarTabla(Nodo raiz) {
+        String nombre=  raiz.hijos.get(0).nombre;
+        Nodo campos = raiz.hijos.get(1);
+        Nodo valores = raiz.hijos.get(2);
+        ntablas=false;//solo por si las moscas
+        if(actual.tablas.containsKey(nombre)){
+            tabla tl = actual.tablas.get(nombre);
+            LinkedList<registro_tabla> resultado = tl.registros;
+            if(campos.hijos.size()==valores.hijos.size()){//ver que los parametros sean los mismo
+                LinkedList<registro_tabla> auxer = new LinkedList<>();
+                if (raiz.hijos.size() == 4) {
+                    Nodo donde = raiz.hijos.get(3);
+                    for (registro_tabla x : resultado) {
+                        aumentarAmbito();
+                        llenarVariables(x, ntablas);//le mando la bandera para saber que existe mas de una tabla
+                        Object res = evaluarEXPRESION(donde);
+                        try {
+                            if ((boolean) res) 
+                                auxer.addLast(x);//se cumplio la condicion :D
+                        } catch (Exception e) {
+                            System.out.println("La expresion no se puede evaluar: " + e.getMessage());
+                            Control.agregarError(new errores(1,"La expresion no se puede evaluar: " + e.getMessage(),raiz));
+                            return;
+                        }
+                        disminuirAmbito();
+                    }
+                    resultado = auxer;
+                }
+               actualizarRegistros(campos,valores,resultado) ;
+            }else
+                Control.agregarError(new errores(1,"Error en los valores en tabla: "+nombre+",para actualizar",raiz));
+        }else
+             Control.agregarError(new errores(1,"No existe la tabla: "+nombre+",para actualizar",raiz));
+    }
+
+    private void actualizarRegistros(Nodo campos, Nodo valores, LinkedList<registro_tabla> resultado) {
+        
+        LinkedList<Object> para_asig = new LinkedList<>();
+        for(Nodo r:valores.hijos){
+            Object res = evaluarEXPRESION(r);
+            if(res!=null)
+                para_asig.addLast(res);
+            else
+            {
+               Control.agregarError(new errores(1,"Error al evaluar la expresion para acualizar",r)); 
+                return;
+            }
+        }
+        
+        int a=0;
+       System.out.println("/**************** ANTES DE ACTUALIZAR*********//////////");
+        for(registro_tabla t:resultado){
+            for(nodo_tabla d: t.registro)
+                System.out.print("| "+d.valor);
+            System.out.println("| "+a);a++;
+        } 
+        System.out.println("----------------------*************-----------------------");
+        
+        //si se pueden actualizar los objetos revisar que funcione cambiar la gramatica
+        a=0;
+        for(Nodo r:campos.hijos){
+            String nombre = r.nombre;
+            for(registro_tabla x :resultado){
+                for(nodo_tabla d: x.registro){
+                    if(d.nombre.equals(nombre))
+                    {
+                        if (!d.pk) {
+                            Object rs = castear(d.tipo, para_asig.get(a));
+                            if (rs != null)//tengo que ver como actualizar atributos :(
+                            {
+                                d.valor = rs;
+                                break;
+                            } else {
+                                Control.agregarError(new errores(1, "Error no son del mismo tipo para actualizar: " + rs, r));
+                                return;
+                            }
+                        } else {
+                            Control.agregarError(new errores(1, "No se puede modificar la llave primaria: "+d.nombre, r));
+                            return;
+                        }
+                    }
+                }
+            }
+            a++;
+        }
+        
+        
+        a=0;
+        for(registro_tabla t:resultado){
+            for(nodo_tabla d: t.registro)
+                System.out.print("| "+d.valor);
+            System.out.println("| "+a);a++;
+        } 
+        System.out.println("----------------------*************-----------------------");
+        
     }
     
 }//fin clase ejecutor
