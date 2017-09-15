@@ -2,8 +2,7 @@ package levantarBD;
 
 import ArbolAST.Control;
 import ArbolAST.Nodo;
-import ArbolAST.ejecutor;
-import base_datos.Atributos_Obj;
+import ArbolAST.variable;
 import base_datos.Objetos;
 import base_datos.atributos;
 import base_datos.bd;
@@ -270,7 +269,7 @@ public class levantarBase {
             String tipo = r.hijos.get(0).nombre.replaceAll("<", "").replace(">", "");
             String atr_nombre = r.hijos.get(1).nombre;
             if(!obj.atributos.containsKey(atr_nombre)){
-                Atributos_Obj atr = new Atributos_Obj(tipo, atr_nombre);
+                variable atr = new variable(tipo, atr_nombre,null);
                 obj.atributos.put(atr_nombre, atr);
             }
         }

@@ -602,14 +602,17 @@ Nodo Llamada_funcion():
 }
 
 Nodo auxFun(String nombre,int fila,int columna):
-{Token v;Nodo raiz,parametros,aux;}
+{Token v,t;Nodo raiz,parametros,aux,acceso;}
 {
 	 <punto> v=<IDEN> 
 	 
-	 {raiz= new Nodo("ACCESO_OBJETO",fila,columna,nombre,v.image);}
+	 {raiz= new Nodo("ACCESO_OBJETO",fila,columna,nombre);
+	  acceso = new Nodo("hijos",0,0);
+	  acceso.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));
+	}
 	 
-	 (<punto> <IDEN> {raiz.hijos.addLast(new Nodo(v.image,v.beginLine,v.beginColumn));} )?
-	 {return raiz;}
+	 (<punto> t=<IDEN> {acceso.hijos.addLast(new Nodo(t.image,t.beginLine,t.beginColumn));} )*
+	 { raiz.hijos.addLast(acceso); return raiz;}
 
 	|<apar> 
 	  
@@ -621,7 +624,7 @@ Nodo auxFun(String nombre,int fila,int columna):
 		
 	<cpar> 
 	{return raiz;}
-	| {return new Nodo("ID_ATR",fila,columna);}
+	| {return new Nodo("ID_ATR",fila,columna,nombre);}
 }
 
 Nodo Ciclo_While():
@@ -883,10 +886,10 @@ Nodo Expresion():
   	| t=<FALSE> 			{return new Nodo("FALSE",t.beginLine,t.beginColumn,t.image);}
 	| t=<TRUE>				{return new Nodo("TRUE",t.beginLine,t.beginColumn,t.image);}
   	| t=<CARACTER> 			{return new Nodo("TEXT",t.beginLine,t.beginColumn,t.image);}
- 	| t=<CADENA>    		{return new Nodo("STRING",t.beginLine,t.beginColumn,t.image);}
+ 	| t=<CADENA>    		{return new Nodo("TEXT",t.beginLine,t.beginColumn,t.image);}
  	//| <NOT> uno= Rel_Not()  {raiz = new Nodo("NOT",uno); return raiz;}
-	| r= Llamada_funcion()	{return r;}
- 	| <apar> r=Rel_Or() <cpar> {return r;}
+	| r= Llamada_funcion()		{return r;}
+ 	| <apar> r=Rel_Or() <cpar>  {return r;}
 }
 
 Nodo Tipo_Var():

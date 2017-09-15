@@ -1,6 +1,5 @@
 package ArbolAST;
 
-import base_datos.Atributos_Obj;
 import base_datos.Objetos;
 import base_datos.atributos;
 import base_datos.bd;
@@ -23,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +40,7 @@ public class ejecutor {
     public boolean continuar;
     public boolean detener;
     Object val_retorno=null;
+    boolean ntablas=false;
     
     
     public ejecutor() {
@@ -282,7 +283,7 @@ public class ejecutor {
     public boolean agregarAtributoObj(Objetos atr,Nodo raiz){
         String nombre=raiz.hijos.get(1).nombre;
         if(!atr.atributos.containsKey(nombre)){
-            atr.atributos.put(nombre,new Atributos_Obj(raiz.hijos.get(0).nombre, nombre));
+            atr.atributos.put(nombre,new variable(raiz.hijos.get(0).nombre, nombre,null));
             return true;
         }
         return false;
@@ -406,7 +407,8 @@ public class ejecutor {
             }
             else
                 Control.agregarError(new errores("SEMANTICO", "YA EXISTE PROCEDIMIENTO: "+nombre, raiz.fila, raiz.columna));
-        }
+        }else
+                Control.agregarError(new errores("SEMANTICO", "SELECCIONE BASE DE DATOS PARA INSERTAR EL PROCEDIMIENTO: "+nombre, raiz.fila, raiz.columna));
     }
 
     private Object ejecutarLLamada(Nodo raiz) {
@@ -415,8 +417,8 @@ public class ejecutor {
         if(raiz.hijos.size()==2){
             return retornarFuncionConParametros(raiz);
         }else{
-            procedimientos pr = actual.procs.get(nombre);
-            if(pr!=null){
+            try {
+                procedimientos pr = actual.procs.get(nombre);
                 aumentarAmbito();
                 for(Nodo s:pr.sentencias.hijos){
                     if(retorno)
@@ -424,17 +426,19 @@ public class ejecutor {
                     sentenciasUSQL(s);
                 }
                 disminuirAmbito();
-            }else
+            } catch (Exception e) {
                 Control.agregarError(new errores(1,"NO EXISTE EL METODO/FUNCION: "+nombre,raiz));
+                return null;
+            }
         }
         return val_retorno;//aqui va return null
     }
     
     private Object retornarFuncionConParametros(Nodo raiz){
         String nombre=raiz.hijos.get(0).nombre;
-        procedimientos pr = actual.procs.get(nombre);
         val_retorno=null;
-        if(pr!=null){
+        if(actual.procs.containsKey(nombre)){
+           procedimientos pr = actual.procs.get(nombre);
             if(comprobarParametros(pr.params,raiz.hijos.get(1))){
                 for(Nodo s:pr.sentencias.hijos){
                     if(retorno)
@@ -442,10 +446,10 @@ public class ejecutor {
                     sentenciasUSQL(s);
                 }
             disminuirAmbito();//porque se ejecuto el metodo
-            }else
+           }else
                 Control.agregarError(new errores(1,"Los parametros no son los correctos: "+nombre,raiz));
         }else
-                Control.agregarError(new errores(1,"NO EXISTE EL METODO/FUNCION: "+nombre,raiz));
+          Control.agregarError(new errores(1,"NO EXISTE EL METODO/FUNCION: "+nombre,raiz));
         return val_retorno;
     }
     
@@ -498,6 +502,9 @@ public class ejecutor {
                 break;
             case "INSTANCIAR":
                 ejecutarInstancia(raiz);
+                break;
+            case "ASIGNACION_OBJETO":
+                ejecutarAsignacionObjecto(raiz);
                 break;
                     
         }
@@ -666,17 +673,20 @@ public class ejecutor {
             }
 
             //---------------------> Si tiene 2 hijos
-            /*if (nodo.hijos.size()==2)
+            if (nodo.hijos.size()==2)
             {
-                if (nodo.hijos.get(0).nombre.equals("!"))
+               if(nodo.nombre.equals("ACCESO_OBJETO")){
+                   return accesoObjecto(nodo);
+               }
+                /* if (nodo.hijos.get(0).nombre.equals("!"))
                     return evaluarNOT(nodo.hijos.get(1));
 
                 if (nodo.nombre.Equals("CALLMET"))
                 {
                     ejecutarLLamadasMetodos(nodo);
                     return retorn;
-                }
-            }*/
+                }*/
+            }
 
             //---------------------> Si tiene 1 hijo
             if (nodo.hijos.size()==1)
@@ -693,6 +703,7 @@ public class ejecutor {
                     //case "CALL_FUN": return evaluarEXPRESION(nodo.hijos.get(0));
                     case "FALSE":   return false;
                     case "TRUE":    return true;
+                    case "ACCESO_OBJETO": return accesoObjecto(nodo);
                     default:        break;
                 }
             }
@@ -845,7 +856,9 @@ public class ejecutor {
         }
         
         LinkedList<registro_tabla> resultado =consulta.productoCartesiano(cartesiano);
-       
+       ntablas =false;
+       if(cartesiano.size()>1)
+           ntablas=true;
         LinkedList<registro_tabla> auxer = new LinkedList<>();
         if(raiz.hijos.size()==3){
             Nodo donde = raiz.hijos.get(2);
@@ -855,7 +868,8 @@ public class ejecutor {
             for(registro_tabla x:resultado){
                 //llenar registro de nueva tabla
                 aumentarAmbito();
-                llenarVariables(x);
+                llenarVariables(x,ntablas);//le mando la bandera para saber que existe mas de una tabla
+                //entonces los accesos se tiene que dar por tabla.atributo
                 Object res = evaluarEXPRESION(donde);
                 try {
                     if((boolean)res){
@@ -870,6 +884,7 @@ public class ejecutor {
             //mandar a ejecutar nodo cond
             disminuirAmbito();
             resultado=auxer;
+            ntablas=false;
             //sacar las variables actuales
         }
         
@@ -933,13 +948,25 @@ public class ejecutor {
         return null;
     }
 
-    private void llenarVariables(registro_tabla x) {
-         for(nodo_tabla y : x.registro){
+    private void llenarVariables(registro_tabla x, boolean tipo) {
+        if(tipo){
+            for(nodo_tabla y : x.registro){
+                String nombre_var = y.tabla+"."+y.nombre;
+                variable var = new variable(y.tipo,nombre_var, y.valor);
+             if(!lista_actual.containsKey(nombre_var)){
+                 lista_actual.put(nombre_var, var);
+             }else
+                 Control.agregarError(new errores("SEMANTICO","YA EXISTE VARIABLE EN EL MISMO AMBITO: "+nombre_var,0,0));
+          }
+        }else{
+           for(nodo_tabla y : x.registro){
              variable var = new variable(y.tipo, y.nombre, y.valor);
              if(!lista_actual.containsKey(y.nombre)){
                  lista_actual.put(y.nombre, var);
-             }
-         }
+             }else
+                 Control.agregarError(new errores("SEMANTICO","YA EXISTE VARIABLE EN EL MISMO AMBITO: "+y.nombre,0,0));
+         } 
+      }
     }
 
     /************** SECCION DE OPERADORES RELACIONALES***************/
@@ -1693,17 +1720,75 @@ public class ejecutor {
         Objetos instancia = actual.Objetos.get(nombre);
         if(instancia!=null){
             for(Nodo s:variables.hijos){
-                Objetos f = new Objetos(nombre);
-                f=(Objetos)instancia.clone();
-                f.nombre=s.nombre;
+                Objetos f = new Objetos(s.nombre);
+               
+                for (Map.Entry<String, variable> entry : instancia.atributos.entrySet()) {
+                    variable aux = (variable)entry.getValue();
+                    variable nueva = new variable(aux.tipo, aux.nombre, val_retorno);//aunque aqui el valor deberia ser nulo
+                    f.atributos.put(nueva.nombre, nueva);
+                    System.out.println("clave=" + entry.getKey() + ", valor=" + entry.getValue());
+                }
+               
                 variable var = new variable(nombre, s.nombre, f);
                 agregarVariable(s.nombre, var);
             }
         }else
             Control.agregarError(new errores(1,"No existe objeto: "+nombre+", para instanciar",raiz));
     }
-    
-    
+
+    private void ejecutarAsignacionObjecto(Nodo raiz) {
+        String nombre = raiz.hijos.get(0).nombre;
+        String atributo= raiz.hijos.get(1).nombre;
+        
+        variable var = retornarVariable(nombre);
+        if (var != null) {
+            if (var.valor instanceof Objetos) {
+                Objetos obj = (Objetos)var.valor;
+                Object asig = evaluarEXPRESION(raiz.hijos.get(2));
+                if (asig != null) {
+                        variable aux = obj.atributos.get(atributo);
+                        if(aux!=null){
+                            asig = castear(aux.tipo,asig);
+                            if(asig!=null)
+                                aux.valor=asig;
+                            else
+                                Control.agregarError(new errores(1,"No se puede castear al tipo: "+aux.tipo+", no se realizara la asignacion",raiz));
+                        }else
+                            Control.agregarError(new errores(1,"No existe el atributo: "+aux.nombre,raiz));
+                }else
+                    Control.agregarError(new errores(1,"No la evaluacion de la expresion arroja valor nulo ",raiz));
+                
+            }else
+                Control.agregarError(new errores(1,"La variable no es de tipo Objecto: "+nombre,raiz));
+        }else
+             Control.agregarError(new errores(1,"No existe la  variable: "+nombre+", para asignar",raiz));
+    }
+   
+    private Object accesoObjecto(Nodo raiz){
+        String id = raiz.hijos.get(0).nombre;
+        Nodo noAcceso =raiz.hijos.get(1);
+        if(ntablas){
+            if(noAcceso.hijos.size()==1){
+                String atributo = noAcceso.hijos.get(0).nombre;
+                variable aux = retornarVariable(id+"."+atributo);
+                if(aux!=null){
+                    return aux.valor;
+                }else
+                    Control.agregarError(new errores(1,"No existe el atributo: "+atributo+", en tabla: "+id,raiz));
+            }else{
+                //es un atributo =D
+                String atributo = noAcceso.hijos.get(0).nombre;
+                variable aux = retornarVariable(id+"."+atributo);
+                if(aux!=null){
+                    return aux.valor;
+                }else
+                    Control.agregarError(new errores(1,"No existe el atributo: "+atributo+", en tabla: "+id,raiz));
+            }
+        }else{
+            
+        }
+        return null;
+    }
     
 }//fin clase ejecutor
 

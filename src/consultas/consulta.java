@@ -1,6 +1,9 @@
 package consultas;
 
 import ArbolAST.Nodo;
+import ArbolAST.cabecera;
+import ArbolAST.variable;
+import base_datos.Objetos;
 import base_datos.atributos;
 import base_datos.nodo_tabla;
 import base_datos.registro_tabla;
@@ -93,6 +96,8 @@ public class consulta {
 
                         z.registro = (LinkedList) y.registro.clone();
                         for (nodo_tabla w : x.registro) {
+                            //prueba codigo nuevo
+                            
                             z.registro.addLast(w);
                         }
                         ultima.addLast(z);
@@ -126,9 +131,33 @@ public class consulta {
     
     public static  LinkedList<registro_tabla> retornarConCampos(LinkedList<registro_tabla>lista,Nodo atributos){
         
-        LinkedList<String> cabeceras=new LinkedList<>();
-        for(Nodo h:atributos.hijos){
+        //LinkedList<String> cabeceras=new LinkedList<>();
+        
+        Nodo atri = atributos.hijos.get(0);
+        if(!atri.nombre.equals("ID_ATR")){
+            return retornarConCampos2(lista, atributos);
+        }
+        /*
+        for(Nodo h:atributos.hijos)
             cabeceras.add(h.nombre);
+        */
+         LinkedList<cabecera> cabeceras=new LinkedList<>();//la tabla funciona cuando son mas de dos tablas
+                                                            //porque se necesita saber de que tabla es                          
+        
+        for(Nodo h:atributos.hijos)
+        {
+            String id = h.hijos.get(0).nombre;
+            
+            if(h.hijos.size()==1)
+            {
+                cabeceras.addLast(new cabecera(id,id , false));
+            }else{
+                Nodo atr = h.hijos.get(1);
+                cabeceras.addLast(new cabecera(id, id, atr.hijos.get(0).nombre, true));
+            }
+            
+            
+            
         }
         
         LinkedList<registro_tabla> result = new LinkedList<>();
@@ -138,17 +167,77 @@ public class consulta {
             a=0;
             registro_tabla aux = new registro_tabla();
             
-            for(String c:cabeceras){
+            for(cabecera c:cabeceras){
+                
                for(nodo_tabla y:x.registro){
-                if(y.nombre.equals(cabeceras.get(a)))
-                    { aux.registro.addLast(y);break;}
-                } 
+                   if(c.atri){
+                          if(y.tipo.equals(c.nombre)){
+                              Objetos nuevo = (Objetos)y.valor;
+                              variable v = nuevo.atributos.get(c.n_atri);
+                              nodo_tabla nt = new nodo_tabla(c.nombre, c.n_atri, v.valor, c.tabla);
+                              aux.registro.addLast(nt);break;
+                          }
+                   }else{
+                       if(y.nombre.equals(cabeceras.get(a).nombre)){
+                         aux.registro.addLast(y);break;}
+                      } 
+                   }
+               }
+            result.add(aux);
+        }
+        return result;
+    }
+    
+    
+    private static LinkedList<registro_tabla> retornarConCampos2(LinkedList<registro_tabla>lista,Nodo atributos){
+        
+        LinkedList<cabecera> cabeceras=new LinkedList<>();
+        
+        for(Nodo h:atributos.hijos)
+        {
+            String id = h.hijos.get(0).nombre;
+            Nodo atr = h.hijos.get(1);
+            if(atr.hijos.size()==1)
+            {
+                cabeceras.addLast(new cabecera(id, atr.hijos.get(0).nombre, false));
+            }else{
+                cabeceras.addLast(new cabecera(id, atr.hijos.get(0).nombre, atr.hijos.get(1).nombre,true));
+            }
+        }
+        
+        
+        
+        
+        LinkedList<registro_tabla> result = new LinkedList<>();
+        
+        int a=0;
+        for(registro_tabla x:lista){
+            a=0;
+            registro_tabla aux = new registro_tabla();
+            
+            for(cabecera c:cabeceras){
+                
+               for(nodo_tabla y:x.registro){
+                   if(c.atri){
+                      if(c.tabla.equals(y.tabla)){
+                          if(y.tipo.equals(c.nombre)){
+                              Objetos nuevo = (Objetos)y.valor;
+                              variable v = nuevo.atributos.get(c.n_atri);
+                              nodo_tabla nt = new nodo_tabla(c.nombre, c.n_atri, v.valor, c.tabla);
+                              aux.registro.addLast(nt);break;
+                          }
+                      } 
+                   }
+                   else if(c.tabla.equals(y.tabla)){
+                      if(y.nombre.equals(cabeceras.get(a).nombre)){//primero comparar si es la tabla //despues atributo//despues objeto
+                         aux.registro.addLast(y);break;}
+                      } 
+                   }
                a++;
             }
             result.add(aux);
         }
         return result;
     }
-    
     
 }

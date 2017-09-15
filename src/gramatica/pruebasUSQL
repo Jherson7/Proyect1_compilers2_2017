@@ -2,19 +2,87 @@ CREAR BASE_DATOS prueba;
 
 USAR prueba;
 
+	#falta crear usuario usuario_calificacion
 
-
-	CREAR OBJETO DIRECCION(
+	CREAR OBJETO T_DIRECCION(
 		INTEGER avenida, 
 		INTEGER calle, 
 		TEXT nombre, 
 		TEXT descripcion
 	);
 
+	CREAR TABLA estudiante(
+		INTEGER carnet LLAVE_PRIMARIA,
+		INTEGER dpi UNICO,
+		TEXT nombre NO NULO,
+		T_DIRECCION direccion,
+		DATE fh_nac NO NULO,
+		DATETIME fh_creacion NO NULO
+	);
+
+	CREAR TABLA curso(
+		INTEGER codigo_curso LLAVE_PRIMARIA,
+		TEXT nombre NO NULO,
+		INTEGER creditos  NO NULO,
+		INTEGER creditos_prerrequisito
+	);
+
+
+	CREAR TABLA asignacion(
+		INTEGER codigo_curso NO NULO LLAVE_FORANEA curso codigo_curso,
+		INTEGER carnet NO NULO LLAVE_FORANEA estudiante carnet,
+		DATETIME fh_asignacion NO NULO,
+		TEXT estado
+	);
+
+
+
+CREAR PROCEDIMIENTO insertar_tercer_semestre (){
+
+	#Alumnos asignados al curso 1
+	SELECCIONAR curso.nombre, estudiante.nombre, asignacion.estado 
+	DE curso, asignacion, estudiante 
+	DONDE asignacion.codigo_curso == 1 
+	&& asignacion.carnet == estudiante.carnet 
+	&& asignacion.codigo_curso == curso.codigo_curso;
+
+	#*Alumnos asignados al curso 2
+	SELECCIONAR curso.nombre, estudiante.nombre, asignacion.estado 
+	DE curso, asignacion, estudiante 
+	DONDE asignacion.codigo_curso == 2 
+	&& asignacion.carnet == estudiante.carnet 
+	&& asignacion.codigo_curso == curso.codigo_curso;
+
+
+	#Asignaciones después de la fecha de hoy
+	SELECCIONAR curso.nombre, estudiante.nombre, asignacion.estado 
+	DE curso, asignacion, estudiante 
+	DONDE asignacion.carnet == estudiante.carnet 
+	&& asignacion.codigo_curso == curso.codigo_curso
+	&& asignacion.fh_asignacion == FECHA_HORA();*#
+
+}
+
+insertar_tercer_semestre();
+
+	
+
+/************prueba easy de inserciones *********************/
+
+CREAR BASE_DATOS prueba;
+
+USAR prueba;
+
+CREAR OBJETO DIRECCION(
+		TEXT avenida, 
+		TEXT calle, 
+		TEXT nombre, 
+		TEXT descripcion
+	);
 
 CREAR TABLA curso(
 		INTEGER codigo_curso LLAVE_PRIMARIA,
-		TEXT nombre_curso NO NULO
+		TEXT nombre NO NULO
 	);
 
 CREAR TABLA estudiante(
@@ -22,16 +90,10 @@ CREAR TABLA estudiante(
 		TEXT nombre NO NULO,
 		TEXT apellido NO NULO,
 		DIRECCION dir NO NULO,
-		#INTEGER curso Llave_Foranea curso codigo_curso NO nulo
+		INTEGER curso Llave_Foranea curso codigo_curso NO nulo
 	);
 
 	
-
-CREAR PROCEDIMIENTO prueba_select (){
-#Asignaciones después de la fecha de hoy
-	Declarar @dir1 DIRECCION;
-	INSERTAR EN TABLA estudiante (201403001, 'Jherson','Sazo',"Guatemala");
-}
 
 
 
@@ -42,25 +104,30 @@ CREAR PROCEDIMIENTO insertar_inicial (){
 	INSERTAR EN TABLA curso (3, 'Bases1');
 	INSERTAR EN TABLA curso (4, 'Analisis1');
 
+	DECLARAR @dir DIRECCION;
+	@dir.avenida='17 ave';
+	@dir.calle='29 Calle';
+	@dir.nombre='Montufar';
 
-	INSERTAR EN TABLA estudiante (201403001, 'Jherson','Sazo',1);
-	INSERTAR EN TABLA estudiante (201403002, 'Mike','Sazo',1);
-	INSERTAR EN TABLA estudiante (201403003, 'Jef','Sazo',3);
-	INSERTAR EN TABLA estudiante (201403004, 'Jhony','Sazo',4);
-	INSERTAR EN TABLA estudiante (20170203, 'Mackenzie','Sazo',1);
+	DECLARAR @dir1 DIRECCION;
+	@dir1.avenida='18 ave';
+	@dir1.calle='30 Calle';
+	@dir1.nombre='San Juan';
+
+	INSERTAR EN TABLA estudiante (201403001, 'Jherson','Sazo',@dir,1);
+	@dir.avenida='25 ave';
+	INSERTAR EN TABLA estudiante (201403002, 'Mike','Sazo',@dir1,1);
+	INSERTAR EN TABLA estudiante (201403003, 'Jef','Sazo',@dir,3);
+	INSERTAR EN TABLA estudiante (201403004, 'Jhony','Sazo',@dir1,4);
+	INSERTAR EN TABLA estudiante (20170203, 'Mackenzie','Sazo',@dir,1);
 
 	
-
-	seleccionar nombre,apellido,nombre_curso de estudiante,curso donde curso==codigo_curso;
+    seleccionar nombre,apellido,DIRECCION.calle de estudiante;
+	#seleccionar estudiante.nombre,estudiante.apellido,curso.nombre,estudiante.DIRECCION.avenida de estudiante,curso donde estudiante.curso==curso.codigo_curso;
 	
 }
 
-
 insertar_inicial();
-
-
-
-
 
 
 

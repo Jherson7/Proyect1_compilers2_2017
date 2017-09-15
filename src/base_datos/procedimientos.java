@@ -1,6 +1,7 @@
 package base_datos;
 
 import ArbolAST.Nodo;
+import ArbolAST.variable;
 import java.util.LinkedList;
 
 /**
@@ -14,7 +15,7 @@ public class procedimientos {
     public String retorno;
     
     //voy a utilizar el Atributos_Obj como los parametros del procedimiento
-    public LinkedList<Atributos_Obj>parametros;
+    public LinkedList<variable>parametros;
     public Nodo sentencias;
     public Nodo params;
     
